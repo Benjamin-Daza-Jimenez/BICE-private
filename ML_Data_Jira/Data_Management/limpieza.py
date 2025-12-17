@@ -1,44 +1,20 @@
 import pandas as pd
 import numpy as np
 
-def separar(df):
+def separar(df, columnas_seleccionadas, ordenar):
     '''
     Separa y limpia el DataFrame de incidentes:
     - Separa por las columnas relevantes de la lista columnas_seleccionadas.
-    - Limpia los datos eliminando filas con valores nulos, duplicados, ordena por fecha y convierte tipos de datos.
+    - Limpia los datos eliminando filas con valores nulos, duplicados y ordena.
 
     Parámetros:
-    df: DataFrame original con todos los datos de incidentes
-    :return: tupla con dos DataFrames: (df_separado, df_limpio)
+        df: DataFrame original con todos los datos de incidentes
+        columnas_seleccionadas: lista de columnas relevantes a seleccionar
+        ordenar: columna por la cual ordenar el DataFrame limpio
+
+    Return:
+        tupla con dos DataFrames: (df_separado, df_limpio)
     '''
-
-    columnas = [
-        'Key',
-        'Status',
-        'Priority', # IMPORTANTE
-        'Equipo Resolutor',
-        'Assignee',
-        'Fecha Real Incidente', # IMPORTANTE
-        'Fecha Resolucióon Real Incidente', # IMPORTANTE
-        'Tiempo de Ejecución',
-        'Fecha Inicio Ejecución',
-        'Duración Incidente', # IMPORTANTE
-        'Activo de SW',
-        'GDI',
-        'Servicio Reportado',
-        'Resuelto con:', # IMPORTANTE
-        'Causa Raíz/Origen',
-        'Descripción de la Solución' # IMPORTANTE
-    ]
-
-    columnas_seleccionadas = [
-        'Priority',
-        'Fecha Real Incidente',
-        'Fecha Resolución Real Incidente',
-        'Duración Incidente',
-        'Resuelto con:',
-        'Descripción de la Solución:'
-    ]
 
     # DataFrame con las columnas seleccionadas
     df_separado = df[columnas_seleccionadas].copy()
@@ -48,14 +24,7 @@ def separar(df):
     df_limpio = df_limpio.drop_duplicates()
 
     # Ordenar por 'Fecha Real Incidente' y convertir 'Duración Incidente' a int64
-    df_limpio.sort_values(by='Fecha Real Incidente', inplace=True)
-    df_limpio = df_limpio.astype({'Duración Incidente': 'int64'})
-
-    # Borrar descripción de la solución
-    df_limpio.drop(columns=['Descripción de la Solución:'], inplace=True)
-
-    print("\n---- Primeras 10 filas del DataFrame limpio ----\n")
-    print(df_limpio.head(10))
+    df_limpio.sort_values(by=ordenar, inplace=True)
 
     return df_separado, df_limpio
 
@@ -63,62 +32,94 @@ def separar(df):
 
 
 
-def conversion(df):
+def aplicar_tipo(df, columna, tipo):
     '''
-    - Convierte la columna Priority de texto a valores numéricos (1-5).
-    - Convierte la columnas de tipo fecha a un formato conveniente:
-        * Lunes a viernes (1-7).
-        * Días del mes (1-31).
-    - Convierte las columnas de formato conveniente a sen y cos para análisis temporal (-1 a 1).
+    Aplica un tipo de dato específico a una columna del DataFrame.
     
     Parámetros:
-    df: DataFrame a modificar
-
+        df: DataFrame a modificar
+        columna: nombre de la columna a la que se le aplicará el tipo de dato
+        tipo: tipo de dato a aplicar (por ejemplo, 'int64', 'float64', 'datetime64', etc.)
     Return:
-    df: DataFrame modificado con:
-        - La columna Priority en formato int64
-        - Las columnas de fecha en Codificación Cíclica (sen y cos) tanto semanal como mensual.
+        df: DataFrame modificado con la columna convertida al tipo de dato especificado
     '''
+    df = df.astype({columna: tipo})
+    return df
 
-    # Convertir Priority de texto a numérico
-    mapeo_prioridad = {'Lowest': 1, 'Low': 2,'Medium': 3, 'High': 4, 'Highest': 5}
-    df['Priority'] = df['Priority'].map(mapeo_prioridad)
-    df = df.astype({'Priority': 'int64'})
+
+
+
+
+def convertir_fecha_a_ciclica(df,columna):
+    '''
+    Convierte una columna de tipo fecha a un formato conveniente:
+        - Lunes a viernes (1-7).
+        - Días del mes (1-31).
+    Convierte las columnas de formato conveniente a sen y cos para análisis temporal (-1 a 1).
+    
+    Parámetros:
+        df: DataFrame a modificar
+        columna: nombre de la columna de tipo fecha a convertir
+    
+    Return:
+        df: DataFrame modificado con las columnas de fecha en Codificación Cíclica (sen y cos) tanto semanal como mensual.
+    '''
+    columnaSemanal = columna + ' Semanal'
+    columnaMensual = columna + ' Mensual'
 
     # Convertir fechas a formato conveniente
-    df['Fecha Real Incidente Semanal'] = df['Fecha Real Incidente'].dt.dayofweek + 1
-    df['Fecha Real Incidente Mensual'] = df['Fecha Real Incidente'].dt.day
-    df['Fecha Resolución Real Incidente Semanal'] = df['Fecha Resolución Real Incidente'].dt.dayofweek + 1
-    df['Fecha Resolución Real Incidente Mensual'] = df['Fecha Resolución Real Incidente'].dt.day
+    df[columnaSemanal] = df[columna].dt.dayofweek + 1
+    df[columnaMensual] = df[columna].dt.day
 
     # Convertir formato conveniente a sen y cos (Codificación cíclica)
-    df['Fecha Real Incidente Semanal sen'] = np.sin(2 * np.pi * df['Fecha Real Incidente Semanal'] / 7)
-    df['Fecha Real Incidente Semanal cos'] = np.cos(2 * np.pi * df['Fecha Real Incidente Semanal'] / 7)
-    df['Fecha Real Incidente Mensual sen'] = np.sin(2 * np.pi * df['Fecha Real Incidente Mensual'] / 31)
-    df['Fecha Real Incidente Mensual cos'] = np.cos(2 * np.pi * df['Fecha Real Incidente Mensual'] / 31)
-    df['Fecha Resolución Real Incidente Semanal sen'] = np.sin(2 * np.pi * df['Fecha Resolución Real Incidente Semanal'] / 7)
-    df['Fecha Resolución Real Incidente Semanal cos'] = np.cos(2 * np.pi * df['Fecha Resolución Real Incidente Semanal'] / 7)
-    df['Fecha Resolución Real Incidente Mensual sen'] = np.sin(2 * np.pi * df['Fecha Resolución Real Incidente Mensual'] / 31)
-    df['Fecha Resolución Real Incidente Mensual cos'] = np.cos(2 * np.pi * df['Fecha Resolución Real Incidente Mensual'] / 31)  
+    df[columnaSemanal + ' sen'] = np.sin(2 * np.pi * df[columnaSemanal] / 7)
+    df[columnaSemanal + ' cos'] = np.cos(2 * np.pi * df[columnaSemanal] / 7)
+    df[columnaMensual + ' sen'] = np.sin(2 * np.pi * df[columnaMensual] / 31)
+    df[columnaMensual + ' cos'] = np.cos(2 * np.pi * df[columnaMensual] / 31)
 
     # Borrar columnas originales de fechas y formatos convenientes
-    df.drop(columns=[
-        'Fecha Real Incidente',
-        'Fecha Resolución Real Incidente',
-        'Fecha Real Incidente Semanal',
-        'Fecha Real Incidente Mensual',
-        'Fecha Resolución Real Incidente Semanal',
-        'Fecha Resolución Real Incidente Mensual'
-    ], inplace=True)
-
-    # Generar variables dummies para la columna 'Resuelto con:'
-
+    df.drop(columns=[columna], inplace=True)
 
     return df
 
 
 
 
+
+def convertir_texto_a_numero(df, columna, diccionario):
+    '''
+    Transforma una columna de texto en números enteros según un diccionario de mapeo.
+    
+    Parámetros:
+        df: DataFrame a modificar
+        columna: nombre de la columna de texto a transformar
+        diccionario: diccionario de mapeo de texto a números enteros
+    Return:
+        df: DataFrame modificado con la columna transformada a números enteros
+    '''
+    df[columna] = df[columna].map(diccionario)
+    df = df.astype({columna: 'int64'})
+    return df
+
+
+
+
+
+def OHE(df, columna):
+    '''
+    Aplica One-Hot Encoding a una columna categórica del DataFrame.
+    
+    Parámetros:
+        df: DataFrame a modificar
+        columna: nombre de la columna categórica a transformar
+    Return:
+        df: DataFrame modificado con la columna transformada mediante One-Hot Encoding
+    '''
+    dummies = pd.get_dummies(df[columna], prefix=columna)
+    df = pd.concat([df, dummies], axis=1)
+    df = df.drop(columns=[columna])
+  
+    return df
 
 def guardar_dataframe(df, ruta):
     '''
