@@ -18,7 +18,7 @@ COLUMNAS = [
         'Fecha Inicio Ejecución',
         'Duración Incidente', # IMPORTANTE
         'Activo de SW',
-        'GDI',
+        'GDI', 
         'Servicio Reportado',
         'Resuelto con:', # IMPORTANTE
         'Causa Raíz/Origen',
