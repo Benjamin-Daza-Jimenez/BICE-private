@@ -3,10 +3,12 @@ Manejo de los datos del proyecto, funciones para procesar y guardar datos.
 '''
 import pandas as pd
 import numpy as np
-from category_encoders import TargetEncoder
+from sklearn.preprocessing import TargetEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
 import nltk
 from nltk.corpus import stopwords
+# from transformers import BertTokenizer, BertforsequenceClassification
+# from torch.utils.data import Dataset, DataLoader
 
 def duracion(df, fecha_inicio_col, fecha_fin_col, nueva_col):
     '''
@@ -68,12 +70,12 @@ def cyclical_encoding(df, columna):
     df[columnYear] = df[columna].dt.month
 
     # Aplicar codificación cíclica
-    df[columnWeek + '_Sen'] = np.sin(2 * np.pi * df[columnWeek] / 7)
-    df[columnWeek + '_Cos'] = np.cos(2 * np.pi * df[columnWeek] / 7)
-    df[columnMonth + '_Sen'] = np.sin(2 * np.pi * df[columnMonth] / 31)
-    df[columnMonth + '_Cos'] = np.cos(2 * np.pi * df[columnMonth] / 31)
-    df[columnYear + '_Sen'] = np.sin(2 * np.pi * df[columnYear] / 12)
-    df[columnYear + '_Cos'] = np.cos(2 * np.pi * df[columnYear] / 12)
+    df[columnWeek + '_Sen'] = np.sin(2 * np.pi * (df[columnWeek]-1) / 7)
+    df[columnWeek + '_Cos'] = np.cos(2 * np.pi * (df[columnWeek]-1) / 7)
+    df[columnMonth + '_Sen'] = np.sin(2 * np.pi * (df[columnMonth]-1) / 31)
+    df[columnMonth + '_Cos'] = np.cos(2 * np.pi * (df[columnMonth]-1) / 31)
+    df[columnYear + '_Sen'] = np.sin(2 * np.pi * (df[columnYear]-1) / 12)
+    df[columnYear + '_Cos'] = np.cos(2 * np.pi * (df[columnYear]-1) / 12)
     df.drop(columns=[columna], inplace=True)
     return df
 
@@ -117,17 +119,19 @@ def target_encoding(df, columnas, target_col):
     Return:
         df: DataFrame modificado con las columnas Target Encoding añadidas
     '''
-    encoder = TargetEncoder(cols=columnas, smoothing=10)
-    df[columnas] = encoder.fit_transform(df[columnas], df[target_col], dtype='float64')
+    encoder = TargetEncoder(target_type='continuous', smooth="auto")
+    X = df[columnas]
+    y = df[target_col]
+    df[columnas] = encoder.fit_transform(X, y)
     return df
 
-def tfidf(df, columnas_texto, max_features=50):
+def tfidf(df, columnas_texto, max_features=10000):
     '''
     Aplica la vectorización TF-IDF a una columna de texto del DataFrame.
     
     Parámetros:
         df: DataFrame a modificar
-        columna_texto: nombre de la columna de texto a la que se le aplicará TF-IDF
+        columnas_texto: lista de nombres de las columnas de texto a las que se les aplicará TF-IDF
         max_features: número máximo de características a extraer
     Return:
         df: DataFrame modificado con las nuevas columnas TF-IDF añadidas
@@ -151,6 +155,7 @@ def tfidf(df, columnas_texto, max_features=50):
         df_result.drop(columns=[columna], inplace=True)
     
     return df_result
+
 def save_data(df, path):
     '''
     Guarda el DataFrame en un archivo CSV en la ruta especificada.
@@ -167,22 +172,33 @@ def save_data(df, path):
     except Exception as e:
         print(f'Error al guardar el DataFrame: {e}')
 
-def carga_equipos(df):
-    df['Fecha_Inicio'] = pd.to_datetime(df['Fecha_Inicio'])
-    df['Fecha_Fin'] = pd.to_datetime(df['Fecha_Fin'])
-    df = df[df['Fecha_Fin'] >= df['Fecha_Inicio']].copy()
+'''
+def transformer(df, columna):
+    model_name = "dccuchile/bert-base-spanish-wwm-cased"
+    tokenizer = BertTokenizer.from_pretrained(model_name)
 
-    inicio = df['Fecha_Inicio'].values
-    fin = df['Fecha_Fin'].values
-    equipos = df['Equipo'].values
+    textos = df[columna].astype(str).tolist()
 
-    mismo_equipo = equipos[:, None] == equipos[None, :]
-    empezo_antes_o_igual = inicio[None, :] <= inicio[:, None]  # inicio[j] <= inicio[i]
-    no_ha_terminado = fin[None, :] >= inicio[:, None]          # fin[j] >= inicio[i]
+    encodings = tokenizer(
+        textos, 
+        truncation=True,    # Corta si el texto es muy largo
+        padding=True,       # Rellena si es muy corto
+        max_length=128,     # Longitud máxima (puedes subirlo a 256 si hay mucha info)
+        return_tensors="pt" # Devuelve tensores de PyTorch
+    )
 
-    carga_vectorizada = np.sum(mismo_equipo & empezo_antes_o_igual & no_ha_terminado, axis=1) -1
-    
-    # Restar 1 para no contar el ticket consigo mismo
-    df['Carga_Equipo'] = carga_vectorizada
+    labels = (df['Priority'] - 1).astype(int).tolist()
 
-    return df
+class TicketDataset(Dataset):
+    def __init__(self, encodings, labels):
+        self.encodings = encodings
+        self.labels = labels
+
+    def __getitem__(self, idx):
+        item = {key: val[idx] for key, val in self.encodings.items()}
+        item['labels'] = torch.tensor(self.labels[idx])
+        return item
+
+    def __len__(self):
+        return len(self.labels)
+'''
