@@ -3,6 +3,7 @@ Manejo de los datos del proyecto, funciones para procesar y guardar datos.
 '''
 import pandas as pd
 import numpy as np
+import re
 from sklearn.preprocessing import TargetEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
 import nltk
@@ -24,7 +25,6 @@ def duracion(df, fecha_inicio_col, fecha_fin_col, nueva_col):
     '''
     df[nueva_col] = (df[fecha_fin_col] - df[fecha_inicio_col]) // np.timedelta64(1, 'h')
     df[nueva_col] = df[nueva_col].astype('int64')
-    df.drop(columns=[fecha_fin_col], inplace=True)
     return df
 
 def clean(df, columnas_seleccionadas, ordenar):
@@ -125,37 +125,6 @@ def target_encoding(df, columnas, target_col):
     df[columnas] = encoder.fit_transform(X, y)
     return df
 
-def tfidf(df, columnas_texto, max_features=10000):
-    '''
-    Aplica la vectorización TF-IDF a una columna de texto del DataFrame.
-    
-    Parámetros:
-        df: DataFrame a modificar
-        columnas_texto: lista de nombres de las columnas de texto a las que se les aplicará TF-IDF
-        max_features: número máximo de características a extraer
-    Return:
-        df: DataFrame modificado con las nuevas columnas TF-IDF añadidas
-    '''
-    try:
-        nltk.download('stopwords', quiet=True)
-    except Exception as e:
-        print(f"Error al descargar stopwords: {e}")
-    
-    df_result = df.copy()
-
-    vectorizer = TfidfVectorizer(max_features=max_features, stop_words=stopwords.words('spanish'), dtype=np.float64)
-    for columna in columnas_texto:
-        tfidf_matrix = vectorizer.fit_transform(df_result[columna].astype(str))
-
-        feature_names = [f"tfidf_{columna}_{name}" for name in vectorizer.get_feature_names_out()]
-
-        df_tfidf = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names, index=df_result.index)
-
-        df_result = pd.concat([df_result, df_tfidf], axis=1)
-        df_result.drop(columns=[columna], inplace=True)
-    
-    return df_result
-
 def save_data(df, path):
     '''
     Guarda el DataFrame en un archivo CSV en la ruta especificada.
@@ -172,33 +141,28 @@ def save_data(df, path):
     except Exception as e:
         print(f'Error al guardar el DataFrame: {e}')
 
-'''
-def transformer(df, columna):
-    model_name = "dccuchile/bert-base-spanish-wwm-cased"
-    tokenizer = BertTokenizer.from_pretrained(model_name)
+def clean_bert(df, columna):
+    def ejecutar_regex(texto):
+        if pd.isna(texto) or not isinstance(texto, str):
+            return ""
 
-    textos = df[columna].astype(str).tolist()
+        texto = texto.lower()
+        texto = re.sub(r'mailto:\S+', ' ', texto)
+        texto = re.sub(r'\b(type|content|paragraph|mediasingle|attrs|expand|media)\b', ' ', texto, flags=re.I)
+        texto = re.sub(r'\{[^{}]*\}', ' ', texto)
+        texto = re.sub(r'http[s]?://\S+|www\.\S+', ' ', texto) 
+        texto = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', ' ', texto)
+        texto = re.sub(r'\b\d{1,2}(?:\.?\d{3}){2}-?[\dkK]\b', ' ', texto)
+        texto = re.sub(r'!.*?!', ' ', texto)
+        texto = re.sub(r'([a-zA-Z])(\d)', r'\1 \2', texto)
+        texto = re.sub(r'(\d)([a-zA-Z])', r'\1 \2', texto)
+        texto = re.sub(r'[^a-zñáéíóú\s]', ' ', texto)
+        texto = re.sub(r'\s+', ' ', texto).strip()
+        
+        return texto
 
-    encodings = tokenizer(
-        textos, 
-        truncation=True,    # Corta si el texto es muy largo
-        padding=True,       # Rellena si es muy corto
-        max_length=128,     # Longitud máxima (puedes subirlo a 256 si hay mucha info)
-        return_tensors="pt" # Devuelve tensores de PyTorch
-    )
+    df[columna] = df[columna].apply(ejecutar_regex)
 
-    labels = (df['Priority'] - 1).astype(int).tolist()
+    df = df[df[columna] != ""].copy()
 
-class TicketDataset(Dataset):
-    def __init__(self, encodings, labels):
-        self.encodings = encodings
-        self.labels = labels
-
-    def __getitem__(self, idx):
-        item = {key: val[idx] for key, val in self.encodings.items()}
-        item['labels'] = torch.tensor(self.labels[idx])
-        return item
-
-    def __len__(self):
-        return len(self.labels)
-'''
+    return df

@@ -1,13 +1,17 @@
-import temporal_analysis.temporal as temporal
-import regresion_analysis.regresion as regresion
-import BERTopic_analysis.bertopic as bertopic
+import func.temporal as temporal
+import func.regresion as regresion
+import func.bertopic as bertopic
+import func.tf_idf as tfidf
 import func.data as data
 import streamlit as st
 import pandas as pd
+import io
 
 FILTROS = [
     'Prioridad',
     'Equipo',
+    'Fecha_Inicio',
+    'Fecha_Fin',
     'Duracion',
     'Activo_SW',
     'Reporte',
@@ -73,6 +77,15 @@ COLUMNS_RENAMED = [
     'Resuelto_con'
 ]
 
+TEMAS = [
+    'Temas_Resumen', 
+    'Temas_Descripcion', 
+    'Temas_Causa', 
+    'Temas_Solucion'
+    ]
+
+buffer = io.BytesIO()
+
 st.set_page_config(page_title="Analizador ML Local", layout="wide")
 
 # Inicialización de estado
@@ -93,8 +106,18 @@ def filtros(df):
     st.sidebar.header("Filtros Activos")
     filtros_a_usar = st.sidebar.multiselect("¿Qué columnas deseas filtrar?", FILTROS)
     for columna in filtros_a_usar:
-
-        if(columna == 'Duracion'):
+        if columna in ['Fecha_Inicio', 'Fecha_Fin']:
+            serie_fecha = pd.to_datetime(df[columna], errors='coerce')
+            f_min = serie_fecha.min().to_pydatetime().date()
+            f_max = serie_fecha.max().to_pydatetime().date()
+            if columna == 'Fecha_Inicio':
+                fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_min, min_value=f_min, max_value=f_max)
+                df = df[pd.to_datetime(df['Fecha_Inicio']).dt.date >= fecha_sel]
+                
+            elif columna == 'Fecha_Fin':
+                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=f_min, max_value=f_max)
+                df = df[pd.to_datetime(df['Fecha_Fin']).dt.date <= fecha_sel]
+        elif(columna == 'Duracion'):
             min = int(df[columna].min())
             max = int(df[columna].max())
 
@@ -152,15 +175,17 @@ else:
     st.sidebar.button("Análisis Temporal", on_click=cambiar_seccion, args=("Temporal",))
     st.sidebar.button("Análisis de Regresión", on_click=cambiar_seccion, args=("Regresion",))
     st.sidebar.button("Análisis de Texto", on_click=cambiar_seccion, args=("Texto",))
+    st.sidebar.button("Bot", on_click=cambiar_seccion, args=("Bot",))
     st.sidebar.button("Cargar nuevo archivo", on_click=cambiar_archivo)
     
     df = filtros(st.session_state.df)
-    df_temporal = temporal.temporal_app(df)
+    df_temporal = temporal.temporal_app(df.copy())
 
 # ------------------------------------ VISUALIZACIÓN ------------------------------------
     if st.session_state.seccion == "Visualizacion":
         st.title("Visualización de Datos")
 
+        df = df.copy()
         st.subheader(f"Datos Filtrados: {len(df)} registros")
         st.dataframe(df, width='stretch')
 
@@ -226,7 +251,7 @@ else:
 # -------------------------------------- REGRESIÓN ---------------------------------------
     elif st.session_state.seccion == "Regresion":
         st.title("Modelo de Regresión")
-
+        df = df.copy()
         if df.empty:
             st.warning("⚠️ El dataset está vacío. Ajusta los filtros laterales para obtener datos.")
         else:
@@ -287,6 +312,88 @@ else:
                 st.subheader("Importancia de las Variables")
                 st.dataframe(importancias, width='stretch')
 
-# --------------------------------------- BERTOPIC ---------------------------------------
+# ---------------------------------------- TEXTO ----------------------------------------
     elif st.session_state.seccion == "Texto":
+        st.title("Análisis de Texto")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write("El TF-IDF es un filtro inteligente que resalta las palabras más 'especiales' de un texto: premia a las palabras que aparecen mucho en un ticket, pero castiga a las que aparecen en todos lados y no dicen nada (como 'el', 'de' o 'problema'). Es una herramienta de conteo de importancia, no de lectura; sirve para saber de qué palabras se habla más, pero no entiende el contexto ni el orden de las ideas, por lo que no sabe distinguir entre 'el sistema falló por el usuario' y 'el usuario falló por el sistema'.")
+            if st.button("Análisis con TF-IDF"):
+                cambiar_seccion("Texto/TFIDF")
+                st.rerun()
+        with col2:
+            if st.button("Análisis con BERTopic"):
+                cambiar_seccion("Texto/BERTopic")
+                st.rerun()
+    
+# ---------------------------------------- TF-IDF ----------------------------------------
+    elif st.session_state.seccion == "Texto/TFIDF":
+        st.title("Análisis de Texto con TF-IDF")
+        
+        columnas = ['Resumen', 'Descripcion', 'Causa', 'Solucion']
+        df_tfidf = df[columnas].copy()
+
+        df_tfidf = tfidf.tfidf_app(df_tfidf, columnas)
+        
+        cols_causa = [c for c in df_tfidf.columns if c.startswith('tfidf_Causa_')]
+        causas = df_tfidf[cols_causa].sum().sort_values(ascending=False).head(10)
+
+        cols_solucion = [c for c in df_tfidf.columns if c.startswith('tfidf_Solucion_')]
+        soluciones = df_tfidf[cols_solucion].sum().sort_values(ascending=False).head(10)
+
+        cols_resumen = [c for c in df_tfidf.columns if c.startswith('tfidf_Resumen_')]
+        resumen = df_tfidf[cols_resumen].sum().sort_values(ascending=False).head(10)
+
+        cols_descripcion = [c for c in df_tfidf.columns if c.startswith('tfidf_Descripcion_')]
+        descripcion = df_tfidf[cols_descripcion].sum().sort_values(ascending=False).head(10)
+
+        st.subheader("Top 10 Palabras en Causa Raíz")
+        st.dataframe(causas, width='stretch')
+        st.subheader("Top 10 Palabras en Solución")
+        st.dataframe(soluciones, width='stretch')
+        st.subheader("Top 10 Palabras en Resumen")
+        st.dataframe(resumen, width='stretch')
+        st.subheader("Top 10 Palabras en Descripción")
+        st.dataframe(descripcion, width='stretch')
+
+# --------------------------------------- BERTopic ---------------------------------------
+    elif st.session_state.seccion == "Texto/BERTopic":
         st.title("Análisis de Texto con BERTopic")
+
+        if st.button("Ejecutar Procesamiento BERTopic"):
+
+            with st.spinner("Limpiando texto y generando tópicos, esto puede tardar varios minutos..."):
+                columnas = ['Resumen', 'Descripcion', 'Causa', 'Solucion']
+                df_bert = bertopic.bertopic_app(df.copy(), columnas)
+                st.session_state.df = df_bert
+                st.rerun()
+        
+        if all(col in st.session_state.df.columns for col in TEMAS):
+            st.success("Temas generados correctamente.")
+            st.dataframe(st.session_state.df, width='stretch') 
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                    st.session_state.df.to_excel(writer, index=False, sheet_name='Datos')
+                st.download_button(
+                    label="Descargar Excel",
+                    data=buffer.getvalue(),
+                    file_name="Temas.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                
+            with col2:
+                if st.button("Usar este DataFrame para el análisis"):
+                    st.session_state.df = df_bert
+                    df = df_bert
+                    cambiar_seccion("Visualizacion")
+                    st.rerun()
+        else:
+            st.info("Presiona el botón para ejecutar el procesamiento de BERTopic y generar los temas.")
+
+# ------------------------------------------ Bot ------------------------------------------ 
+    elif st.session_state.seccion == "Bot":
+        st.title("Análisis de Texto con BERTopic")
+       

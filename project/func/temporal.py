@@ -7,11 +7,10 @@ import seaborn as sns
 import os
 
 MESES = {1:'Ene', 2:'Feb', 3:'Mar', 4:'Abr', 5:'May', 6:'Jun', 7:'Jul', 8:'Ago', 9:'Sep', 10:'Oct', 11:'Nov', 12:'Dic'}
-OUTPUT_DIR= 'temporal_analysis/reports'
 
 def anual(df):
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    if not os.path.exists('reports'):
+        os.makedirs('reports')
     
     rutas_graficos = []
 
@@ -87,7 +86,7 @@ def anual(df):
 
         plt.tight_layout()
 
-        ruta = f'{OUTPUT_DIR}/anual_analysis_{anio}.png'
+        ruta = f'reports/anual_analysis_{anio}.png'
         plt.savefig(ruta)
         rutas_graficos.append(ruta)
         plt.close()
@@ -97,8 +96,8 @@ def anual(df):
     return rutas_graficos
 
 def mensual(df):
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    if not os.path.exists('reports'):
+        os.makedirs('reports')
     
     rutas_graficos = []
 
@@ -131,7 +130,7 @@ def mensual(df):
         plt.xlabel('Mes', fontsize=12, fontweight='bold')
         plt.ylabel('Día del Mes', fontsize=12, fontweight='bold')
 
-        ruta = f'{OUTPUT_DIR}/mensual_analysis_{anio}.png'
+        ruta = f'reports/mensual_analysis_{anio}.png'
         plt.savefig(ruta)
         rutas_graficos.append(ruta)
         plt.close()
@@ -153,4 +152,5 @@ def temporal_app(df_original):
     df['Día'] = df['Fecha_Inicio'].dt.day
     df['Día_Semanal'] = df['Fecha_Inicio'].dt.dayofweek + 1  # Lunes=1, Domingo=7
 
+    df.to_excel("data/Temporal_Results.xlsx", index=False)
     return df
