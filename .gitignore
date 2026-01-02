@@ -1,0 +1,32 @@
+# --- ENTORNOS VIRTUALES ---
+# Ignora la carpeta donde se instalan las librerías
+venv/
+env/
+.venv/
+ENV/
+
+# --- ARCHIVOS DE CONFIGURACIÓN Y SECRETOS ---
+# Ignora archivos con contraseñas o tokens (como el .env que hablamos)
+.env
+.env.local
+
+# --- PYTHON (ARCHIVOS TEMPORALES) ---
+# Ignora archivos compilados de Python que no sirven para el código
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# --- DATOS Y EXCEL (OPCIONAL) ---
+# Si no quieres que tus archivos de datos se suban a GitHub por privacidad
+*.csv
+*.xlsx
+*.xls
+# Pero si quieres que se suban los CSVs pequeños, comenta las líneas de arriba con un #
+
+# --- JUPYTER NOTEBOOKS ---
+.ipynb_checkpoints
+
+# --- SISTEMA OPERATIVO ---
+.DS_Store
+Thumbs.db
