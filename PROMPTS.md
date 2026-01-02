@@ -1,58 +1,20 @@
-# BICE-private
+Actúa como analista de datos que trabaja con ML. Necesito separar datos relevantes (patrones) de columnas tipo texto que describen soluciones o incidentes empresariales, usando herramientas de Python, considerando principalmente la optimización del programa. Debes limitarte a usar herramientas vectorizadas como numpy o semejantes. Proporciona nuevas columnas con datos relevantes que puedan seguir patrones interesantes para ML.
 
-# 📚 Documentación del Proyecto
-
-## ⏱️ Requisitos Previos
-
-Para poder ejecutar este proyecto, se necesita tener las siguientes herramientas instaladas en la computadora:
-* Python 3.9 o superior
-* Make
-* Pip
-* Virtualenv
-* Librerías de Python (requirements.txt)
-#
-## 🏛️ Comandos
-
-Instalar todo lo necesario desde requirements.txt.
-```bash
-make install
-```
-
-Lanzar aplicación de Streamlit (app).
-```bash
-make run
-```
-
-Ejecutar todas las pruebas en la carpeta tests/
-```bash
-make test
-```
-
-Actualizar lista de librerías
-```bash
-make freeze
-```
-
-## 🗂️ Estructura del Proyecto
-
-```text
-BICE-Private
-├── project/                # Código fuente y entorno de ejecución
-│   ├── data/               # Almacena archivos Excel que se manejan
-│   ├── func/               # Archivos con la lógica
-│   ├── reports/            # Almacena gráficos generados
-│   ├── tests/              # Pruebas unitarias
-│   ├── venv/               # Entorno virtual
-│   ├── app.py              # Interfaz de usuario (Streamlit)
-│   ├── Makefile            # Comandos de automatización
-│   └── requirements.txt    # Librerías necesarias para el proyecto
-├── .gitignore
-└── README.md
-```
-
-# 👾 PROMPT Agente
-
-```text
+Actúa como analista de datos que trabaja con ML. Necesito identificar cómo analizar las siguientes columnas:
+    'Resumen': string que resumne un incidente        
+    'Priority': lowest,low,medium,high,highest
+    'Fecha_Inicio': inicio del ticket
+    'Fecha_Fin': final del ticket
+    'Duracion': tiempo tardado (horas)
+    'Activo_SW': string 
+    'Reporte': string de la persona que lo reporta
+    'Descripcion': string que describe el ticket  
+    'Causa': string de la causa
+    'Solucion': string de la solucion
+    'Resuelto_con': tipos
+Mas en especifico, quisiera saber que herramientas usar para estos datos (regresión lineas, clasificación, etc). Esto debe ser en Python, utilizando librerias correspondientes a ML. Proporciona ideas para abarcar estos datos y tener conclusiones o captar patrones.
+----------------------------------------------------------
+Para el agente:
 # Objetivo
 Eres un asistente experto en análisis de incidentes de TI. Tu conocimiento se basa en datos provenientes de tickets de Jira.
 
@@ -125,6 +87,3 @@ Eres un asistente experto en análisis de incidentes de TI. Tu conocimiento se b
 
 # Follow-up and Closing
 - Offer additional help: "¿Quieres que te guíe para usar la clave en tu aplicación?"
-```
-
-
