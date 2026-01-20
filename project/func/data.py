@@ -6,7 +6,6 @@ import numpy as np
 import re
 from sklearn.preprocessing import TargetEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
-import nltk
 from nltk.corpus import stopwords
 # from transformers import BertTokenizer, BertforsequenceClassification
 # from torch.utils.data import Dataset, DataLoader
@@ -23,8 +22,11 @@ def duracion(df, fecha_inicio_col, fecha_fin_col, nueva_col):
     Return:
         df: DataFrame modificado con la nueva columna de duración añadida
     '''
-    df[nueva_col] = (df[fecha_fin_col] - df[fecha_inicio_col]) // np.timedelta64(1, 'h')
-    df[nueva_col] = df[nueva_col].astype('int64')
+    df = df.dropna(subset=[fecha_inicio_col, fecha_fin_col])
+    df = df[df[fecha_fin_col] >= df[fecha_inicio_col]]
+    
+    df.loc[:, nueva_col] = (df[fecha_fin_col] - df[fecha_inicio_col]) // np.timedelta64(1, 'h')
+    df.loc[:, nueva_col] = df[nueva_col].astype('int64')
     return df
 
 def clean(df, columnas_seleccionadas, ordenar):
@@ -60,6 +62,9 @@ def cyclical_encoding(df, columna):
     Return:
         df: DataFrame modificado con las nuevas columnas sen y cos añadidas
     '''
+
+    df = clean(df, [columna], columna)
+
     columnWeek = columna + '_Semanal'
     columnMonth = columna + '_Mensual'
     columnYear = columna + '_Anual'
@@ -103,6 +108,7 @@ def OHE(df, columna):
     Return:
         df: DataFrame modificado con las nuevas columnas One-Hot Encoding añadidas
     '''
+    df = df.dropna(subset=[columna])
     dummies = pd.get_dummies(df[columna], prefix=columna, dtype='int64')
     df = pd.concat([df, dummies], axis=1)
     df.drop(columns=[columna], inplace=True)

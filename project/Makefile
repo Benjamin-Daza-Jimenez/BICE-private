@@ -1,10 +1,12 @@
 PYTHON = venv/bin/python
 PIP = venv/bin/pip
 STREAMLIT = venv/bin/streamlit
+PYINSTALLER = venv/bin/pyinstaller
 
 install:
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
+	$(PIP) install pywebview pyinstaller
 
 freeze:
 	$(PIP) freeze > requirements.txt
@@ -12,10 +14,8 @@ freeze:
 run:
 	$(STREAMLIT) run app.py
 
+run-desktop:
+	$(PYTHON) desktop.py
+
 test:
 	$(PYTHON) -m unittest discover tests
-
-clean:
-	rm -rf __pycache__
-	rm -rf tests/__pycache__
-	rm -rf func/__pycache__
