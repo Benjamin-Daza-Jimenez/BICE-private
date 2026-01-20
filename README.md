@@ -50,6 +50,25 @@ BICE-Private
 └── README.md
 ```
 
+# Pasos para instalar dependencias
+
+1. Clonar repositorio: ejecutar el siguiente script en la terminal.
+```bash
+git clone https://github.com/Benjamin-Daza-Jimenez/BICE-private.git
+```
+
+2. Instalar dependencias: ubicarse en la carpeta BICE-PRIVATE/project/.
+
+Para Mac solo ejecutar. Para Windows, usar terminal WSL.
+```bash
+make install
+```
+
+3. Ejecutar programa:
+```bash
+make run
+```
+
 # 👾 PROMPT Agente
 
 ```text
