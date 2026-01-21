@@ -42,14 +42,12 @@ make run
 
 ## 🏛️ Diccionario de Comandos (Makefile)
 
-+---------------+-------------------------------------------------------+
-| COMANDO       | ACCIÓN                                                |
-+---------------+-------------------------------------------------------+
-| make install  | Configura el entorno virtual e instala dependencias.  |
-| make run      | Inicia el servidor de Streamlit para ver la app.      |
-| make test     | Ejecuta las pruebas unitarias en la carpeta tests/.   |
-| make freeze   | Actualiza el archivo requirements.txt.                |
-+---------------+-------------------------------------------------------+
+| Comando | Acción |
+| :--- | :--- |
+| `make install` | Crea el entorno virtual e instala las dependencias desde `requirements.txt`. |
+| `make run` | Lanza la aplicación de Streamlit (`app.py`). |
+| `make test` | Ejecuta de forma automática todas las pruebas unitarias en `tests/`. |
+| `make freeze` | Actualiza el archivo `requirements.txt` con las librerías instaladas. |
 
 ## 🗂️ Estructura del Proyecto
 
