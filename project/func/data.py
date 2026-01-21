@@ -1,14 +1,11 @@
-'''
-Manejo de los datos del proyecto, funciones para procesar y guardar datos.
-'''
 import pandas as pd
 import numpy as np
 import re
 from sklearn.preprocessing import TargetEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.corpus import stopwords
-# from transformers import BertTokenizer, BertforsequenceClassification
-# from torch.utils.data import Dataset, DataLoader
+import spacy
+import streamlit as st
 
 def duracion(df, fecha_inicio_col, fecha_fin_col, nueva_col):
     '''
@@ -148,6 +145,9 @@ def save_data(df, path):
         print(f'Error al guardar el DataFrame: {e}')
 
 def clean_bert(df, columna):
+
+    nlp = obtener_modelo_spacy()
+
     def ejecutar_regex(texto):
         if pd.isna(texto) or not isinstance(texto, str):
             return ""
@@ -167,8 +167,33 @@ def clean_bert(df, columna):
         
         return texto
 
+    def remover_nombres(texto):
+        if pd.isna(texto) or not isinstance(texto, str): 
+            return ""
+        doc = nlp(texto)
+        tokens_sin_nombres = [token.text for token in doc if token.ent_type_ != 'PER']
+        texto_sin_nombres = " ".join(tokens_sin_nombres)
+        return ejecutar_regex(texto_sin_nombres)
+
+    df['temp_para_modelo'] = df[columna].apply(remover_nombres)
     df[columna] = df[columna].apply(ejecutar_regex)
 
-    df = df[df[columna] != ""].copy()
+    df = df[df['temp_para_modelo'] != ""].copy()
 
     return df
+
+@st.cache_resource
+def obtener_modelo_spacy():
+    """
+    Esta función se ejecuta SOLO UNA VEZ en toda la vida de la app.
+    La próxima vez que se llame, Streamlit devolverá el modelo guardado en RAM.
+    """
+    try:
+        return spacy.load("es_core_news_md")
+    except OSError:
+        try:
+            return spacy.load("es_core_news_sm")
+        except OSError:
+            from spacy.cli import download
+            download("es_core_news_md")
+            return spacy.load("es_core_news_md")

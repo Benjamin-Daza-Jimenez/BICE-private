@@ -1,5 +1,6 @@
+import func.ficha_operation as ficha
+import func.causa_solucion as c_s
 import func.bertopic as bertopic
-import func.C_S as c_s
 import streamlit as st
 import pandas as pd
 import sys
@@ -126,10 +127,31 @@ def operation_app(df_original):
 
 # -------------------------------------- ACTIVO SW ---------------------------------------
     elif st.session_state.seccion_op == "Activo_SW":
+        st.subheader("Análisis de Activo de Software")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info("**Ficha Histórica**\n\nVisualice el comportamiento los Activos de Software, a través de su Promedio de tickets mensual, Equipo más frecuente, Causa raíz y más.")
+            if st.button("Ver Ficha", use_container_width=True):
+                cambiar_seccion("Activo_SW/Ficha")
+                st.rerun()
+        
+        with col2:
+            st.info("**Causa y Solución**\n\nTarjetas que muestran las causas raíz y soluciones aplicadas por activo de software y palabras claves en la descripción.")
+            if st.button("Ver Causa y Solución", use_container_width=True):
+                cambiar_seccion("Activo_SW/Pred")
+                st.rerun()
+        st.write("")
+
+# ---------------------------------- ACTIVO SW / FICHA ---------------------------------------
+    elif st.session_state.seccion_op == "Activo_SW/Ficha":
+        ficha.ficha_tecnica(df, 'Activo_SW')
+
+# ---------------------------------- ACTIVO SW / PRED ---------------------------------------
+    elif st.session_state.seccion_op == "Activo_SW/Pred":
         df = df.copy()
 
-        st.title("Análisis de Activo de Software")
-        opcion = st.selectbox("Seleccione el Activo de Software para el Análisis", df['Activo_SW'].unique())
+        st.title("Causa y Solución por Activo de Software")
+        opcion = st.selectbox("Seleccione el Activo de Software para el Análisis", df['Activo_SW'].unique(), index=None, placeholder="Seleccione un Activo de Software")
         if opcion:
             df = df[df['Activo_SW'] == opcion]
         
@@ -137,10 +159,31 @@ def operation_app(df_original):
             
 # --------------------------------------- REPORTE ----------------------------------------
     elif st.session_state.seccion_op == "Reporte":
+        st.subheader("Análisis de Servicio Reportado")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info("**Ficha Histórica**\n\nVisualice el comportamiento los Servicios Reportados, a través de su Promedio de tickets mensual, Equipo más frecuente, Causa raíz y más.")
+            if st.button("Ver Ficha", use_container_width=True):
+                cambiar_seccion("Reporte/Ficha")
+                st.rerun()
+        
+        with col2:
+            st.info("**Causa y Solución**\n\nTarjetas que muestran las causas raíz y soluciones aplicadas por servicio reportado y palabras claves en la descripción.")
+            if st.button("Ver Causa y Solución", use_container_width=True):
+                cambiar_seccion("Reporte/Pred")
+                st.rerun()
+        st.write("")
+
+# ---------------------------------- REPORTE / FICHA ---------------------------------------
+    elif st.session_state.seccion_op == "Reporte/Ficha":
+        ficha.ficha_tecnica(df, 'Reporte')
+
+# ---------------------------------- REPORTE / PRED ---------------------------------------
+    elif st.session_state.seccion_op == "Reporte/Pred":
         df = df.copy()
 
-        st.title("Análisis de Servicio Reportado")
-        opcion = st.selectbox("Seleccione el Servicio Reportado para el Análisis", df['Reporte'].unique())
+        st.title("Causa y Solución por Servicio Reportado")
+        opcion = st.selectbox("Seleccione el Servicio Reportado para el Análisis", df['Reporte'].unique(), index=None, placeholder="Seleccione un Servicio Reportado")
         if opcion:
             df = df[df['Reporte'] == opcion]
         

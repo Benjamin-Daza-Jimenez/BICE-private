@@ -27,9 +27,7 @@ def bertopic_app(df, columnas, verbose=True):
         print(f"Procesando columna: {columna} con BERTopic")
 
         df_temp = data.clean_bert(df_temp, columna)
-        df_temp['temp_limpieza'] = df_temp[columna]
-
-        docs = df_temp['temp_limpieza'].astype(str).tolist()
+        docs = df_temp['temp_para_modelo'].astype(str).tolist()
 
         model = BERTopic(language="multilingual", vectorizer_model=vectorizer_model, verbose=verbose)
         topics, _ = model.fit_transform(docs)
@@ -55,7 +53,8 @@ def bertopic_app(df, columnas, verbose=True):
         nombre_nueva_col = f"Temas_{columna}"
 
         df_temp.insert(idx_original + 1, nombre_nueva_col, nombres_temas)
-        df_temp.drop(columns=['temp_limpieza'], inplace=True)
+        if 'temp_para_modelo' in df_temp.columns:
+            df_temp.drop(columns=['temp_para_modelo'], inplace=True)
     
     return df_temp
 
