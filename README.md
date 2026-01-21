@@ -1,37 +1,55 @@
-# BICE-private
+# BICE-private | Documentación del Proyecto
 
-# 📚 Documentación del Proyecto
+Este proyecto es una aplicación desarrollada en Python 3.9+ con una interfaz en Streamlit. Utiliza un Makefile para automatizar las tareas de instalación, ejecución y pruebas.
+
+## ⚠️ Nota Importante para Usuarios de Windows
+
+El sistema de automatización de este proyecto utiliza make, una herramienta nativa de sistemas Unix.
+* macOS / Linux: Puede ejecutar los comandos directamente en la terminal.
+* Windows: No use PowerShell ni el CMD estándar. Debe utilizar una terminal WSL (Windows Subsystem for Linux) o contar con un entorno emulado como Git Bash con Make instalado para que los comandos funcionen correctamente.
 
 ## ⏱️ Requisitos Previos
 
-Para poder ejecutar este proyecto, se necesita tener las siguientes herramientas instaladas en la computadora:
+Asegurarse de tener instaladas las siguientes herramientas antes de comenzar:
 * Python 3.9 o superior
-* Make
-* Pip
-* Virtualenv
-* Librerías de Python (requirements.txt)
-#
-## 🏛️ Comandos
+* Make (Herramienta de automatización)
+* Pip (Gestor de paquetes de Python)
+* Virtualenv (Para la gestión del entorno virtual)
 
-Instalar todo lo necesario desde requirements.txt.
+## 🚀 Guía de Instalación y Uso
+
+1. **Clonar repositorio**
+
+Abrir terminal y ejecutar el siguiente comando:
+```bash
+git clone https://github.com/Benjamin-Daza-Jimenez/BICE-private.git
+cd BICE-private/project/
+```
+
+2. **Instalación de dependencias**
+
+Dentro de la carpeta project/, ejecutar el comando de instalación. Este paso creará el entorno virtual e instalará las librerías necesarias de requirements.txt.
 ```bash
 make install
 ```
 
-Lanzar aplicación de Streamlit (app).
+3. **Ejecutar programa**
+
+Una vez instaladas las dependencias, lanzar la interfaz de Streamlit con:
 ```bash
 make run
 ```
 
-Ejecutar todas las pruebas en la carpeta tests/
-```bash
-make test
-```
+## 🏛️ Diccionario de Comandos (Makefile)
 
-Actualizar lista de librerías
-```bash
-make freeze
-```
++---------------+-------------------------------------------------------+
+| COMANDO       | ACCIÓN                                                |
++---------------+-------------------------------------------------------+
+| make install  | Configura el entorno virtual e instala dependencias.  |
+| make run      | Inicia el servidor de Streamlit para ver la app.      |
+| make test     | Ejecuta las pruebas unitarias en la carpeta tests/.   |
+| make freeze   | Actualiza el archivo requirements.txt.                |
++---------------+-------------------------------------------------------+
 
 ## 🗂️ Estructura del Proyecto
 
@@ -50,24 +68,7 @@ BICE-Private
 └── README.md
 ```
 
-# Pasos para instalar dependencias
 
-1. Clonar repositorio: ejecutar el siguiente script en la terminal.
-```bash
-git clone https://github.com/Benjamin-Daza-Jimenez/BICE-private.git
-```
-
-2. Instalar dependencias: ubicarse en la carpeta BICE-PRIVATE/project/.
-
-Para Mac solo ejecutar. Para Windows, usar terminal WSL.
-```bash
-make install
-```
-
-3. Ejecutar programa:
-```bash
-make run
-```
 
 # 👾 PROMPT Agente
 
