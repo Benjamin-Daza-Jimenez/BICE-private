@@ -209,7 +209,7 @@ def management_app(df_original):
 
         with col4:
             st.success("**Agrupación por Temas**\n\nCategorización automática de incidentes mediante modelos de IA, visualizado en un gráfico de Paretto.")
-            if st.button("Ver Distribución de Temas", use_container_width=True):
+            if st.button("Ver Gráfico de Pareto", use_container_width=True):
                 cambiar_seccion("Texto/BERTopic")
                 st.rerun()
         st.write("")
@@ -219,8 +219,8 @@ def management_app(df_original):
         col5, col6 = st.columns(2)
         
         with col5:
-            st.warning("**Concentración de Carga**\n\nAnálisis de distribución de volumen de tickets según su categorización a través de gráficos de Campana de Gauss.")
-            if st.button("Ver Análisis de Volumen", use_container_width=True):
+            st.warning("**Concentración de Carga**\n\nAnálisis de distribución de volumen de tickets según su actividad diaria mediante gráfico de Campana de Gauss.")
+            if st.button("Ver Gráfico de Campana", use_container_width=True):
                 cambiar_seccion("Volumen/General") 
                 st.rerun()
         

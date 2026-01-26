@@ -66,7 +66,54 @@ BICE-Private
 └── README.md
 ```
 
+## Funcionalidades de Gestión
 
+### Filtros
+
+Se pueden incorporar múltiples filtros activos tales como:
+* Prioridad: prioridad asignada al ticket (Lowest, Low, Medium, High, Highest).
+* Equipo: equipo resolutor del ticket.
+* Fecha_Inicio: fecha real que inicia el ticket.
+* Fecha_Fin: fecha real que finaliza el ticket.
+* Duracion: duración en horas desde que inicia hasta que termina el ticket.
+* Activo_SW: activo de software asignado al ticket.
+* Reporte: servicio reportado en el ticket.
+* Resuelto_con: categoría de resolución del ticket.
+
+### Evolución Histórica | Gráfico de barras Anual
+
+El reporte genera una comparativa mensual mediante gráficos de doble barra, donde la primera columna indica el total de tickets gestionados y la segunda el tiempo promedio de resolución. Esta vista permite contrastar directamente la carga de trabajo contra la rapidez de respuesta de cada mes.
+
+### Intensidad Operativa | Mapa de calor Mensual
+
+Se genera un mapa de calor (heat map) que distribuye la carga de tickets por día y mes, utilizando una escala de colores para resaltar visualmente los periodos de mayor actividad. Esta visualización permite identificar con precisión picos de demanda estacionales y patrones críticos de saturación a lo largo del año. El número de cada recuadro identifica el tiempo medio que demora en terminar los tickets iniciados en tales días.
+
+### Agrupación por Temas | Gráfico de Pareto
+
+El sistema implementa categorización automática mediante modelos de IA para clasificar columnas Resumen, Descripción, Causa y Solución, cuyos resultados se presentan en un gráfico de Pareto. Esta visualización permite identificar el '80/20' de la operación, señalando el pequeño grupo de categorías que genera la gran mayoría de los tickets para priorizar estrategias de resolución.
+
+### Concentración de Carga | Gráfico de Campana de Gauss
+
+Se representa la distribución de la actividad diaria mediante una Campana de Gauss, visualizando la concentración del volumen de tickets a lo largo del tiempo. Este análisis permite identificar el comportamiento estándar del servicio y detectar estadísticamente desviaciones o días con una carga de trabajo fuera de lo normal.
+
+## Funcionalidades de Operación
+
+### Filtros
+
+Se pueden incorporar múltiples filtros activos tales como:
+* Prioridad: prioridad asignada al ticket (Lowest, Low, Medium, High, Highest).
+* Equipo: equipo resolutor del ticket.
+* Fecha_Inicio: fecha real que inicia el ticket.
+* Fecha_Fin: fecha real que finaliza el ticket.
+* Duracion: duración en horas desde que inicia hasta que termina el ticket.
+
+### Ficha Histórica
+
+Se proporciona una vista detallada del comportamiento de los Activos de Software o del Servicio Reportado, consolidando métricas clave como el promedio mensual de tickets, los equipos de soporte más frecuentes y las principales causas raíz. Esta visualización integral permite supervisar el rendimiento de cada activo y orientar las estrategias de mantenimiento preventivo basándose en datos históricos.
+
+### Causa y Solución
+
+Se presentan tarjetas informativas que detallan las causas raíz y soluciones aplicadas por cada Activo de Software o Servicio Reportado, integrando un análisis de palabras clave extraídas de las descripciones. Este formato permite consultar rápidamente el historial de resolución y los términos más recurrentes asociados a las fallas de cada componente.
 
 # 👾 PROMPT Agente
 
