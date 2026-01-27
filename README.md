@@ -40,7 +40,9 @@ Una vez instaladas las dependencias, lanzar la interfaz de Streamlit con:
 make run
 ```
 
-## 🏛️ Diccionario de Comandos (Makefile)
+## 🏛️ Diccionario de Comandos 
+
+### Makefile
 
 | Comando | Acción |
 | :--- | :--- |
@@ -49,7 +51,7 @@ make run
 | `make test` | Ejecuta de forma automática todas las pruebas unitarias en `tests/`. |
 | `make freeze` | Actualiza el archivo `requirements.txt` con las librerías instaladas. |
 
-## 🏛️ Diccionario de Comandos (Entorno Virtual)
+### Entorno Virtual
 
 | Comando | Acción |
 | :--- | :--- |
