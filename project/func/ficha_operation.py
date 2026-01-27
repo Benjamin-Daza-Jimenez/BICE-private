@@ -16,20 +16,27 @@ def ficha_tecnica(df, col):
         total_casos = len(df_ficha)
 
         if pd.api.types.is_datetime64_any_dtype(df_ficha['Fecha_Inicio']):
-            rango_dias = (df_ficha['Fecha_Inicio'].max() - df_ficha['Fecha_Inicio'].min()).days
+            fecha_min = df_ficha['Fecha_Inicio'].min()
+            fecha_max = df_ficha['Fecha_Inicio'].max()
+
+            txt_fechas = f"{fecha_min.strftime('%d-%m-%Y')} al {fecha_max.strftime('%d-%m-%Y')}"
+
+            rango_dias = (fecha_max - fecha_min).days
             meses_antiguedad = max(rango_dias / 30, 1)
-            promedio = total_casos / meses_antiguedad
-            frecuencia = f"{promedio:.0f} tickets"
         else:
-            frecuencia = "N/A"
+            txt_fechas = "Fechas no disponibles"
+            meses_antiguedad = 1
         
-        if 'Duracion' in df_ficha.columns and pd.api.types.is_numeric_dtype(df_ficha['Duracion']):
-            duracion = df_ficha['Duracion'].mean()
-            duracion_promedio = f"{duracion:.0f} hrs"
+        orden_prioridad = ['Highest', 'High', 'Medium', 'Low', 'Lowest']
+
+        if 'Prioridad' in df_ficha.columns:
+            grupo = df_ficha.groupby('Prioridad').agg(
+                Conteo=('Fecha_Inicio', 'count'),
+                Duracion_Prom=('Duracion', 'mean') if 'Duracion' in df_ficha.columns else ('Fecha_Inicio', lambda x: 0)
+            )
+            grupo = grupo.reindex(orden_prioridad).fillna(0)
         else:
-            duracion_promedio = "N/A (Datos no disponibles)"
-        
-        prioridad_top = df_ficha['Prioridad'].mode()[0] if 'Prioridad' in df_ficha.columns else "Desconocida"
+            grupo = pd.DataFrame(index=orden_prioridad, data={'Conteo':0, 'Duracion_Prom':0})
 
         # Diseño
         st.divider()
@@ -38,15 +45,43 @@ def ficha_tecnica(df, col):
         with kpi1:
             with st.container(border=True):
                 st.metric("Total Incidentes", total_casos)
+                st.caption(f"📅 **Rango:**\n{txt_fechas}")
         with kpi2:
             with st.container(border=True):
-                st.metric("Frecuencia Mensual", frecuencia, help="Promedio tickets/mes")
+                st.markdown("**📊 Por Prioridad**")
+                txt_prio = ""
+                for prio in orden_prioridad:
+                    val = int(grupo.loc[prio, 'Conteo'])
+                    if val > 0:
+                        txt_prio += f"- **{prio}:** {val}\n"
+                
+                if not txt_prio: txt_prio = "Sin datos"
+                st.markdown(txt_prio)
         with kpi3:
             with st.container(border=True):
-                st.metric("Tiempo Resolución", duracion_promedio, help="Tiempo promedio de arreglo (MTTR)")
+                st.markdown("**⏱️ Tiempo Resolución**", help="Duración promedio por prioridad")
+                txt_time = ""
+                for prio in orden_prioridad:
+                    val = grupo.loc[prio, 'Conteo']
+                    if val > 0:
+                        horas = grupo.loc[prio, 'Duracion_Prom']
+                        txt_time += f"- **{prio}:** {horas:.0f} h\n"
+                
+                if not txt_time: txt_time = "N/A"
+                st.markdown(txt_time)
         with kpi4:
             with st.container(border=True):
-                st.metric("Prioridad Típica", prioridad_top, delta_color="off")
+                st.markdown("**📅 Frec. Mensual**")
+                txt_freq = ""
+                for prio in orden_prioridad:
+                    val = grupo.loc[prio, 'Conteo']
+                    if val > 0:
+                        mensual = val / meses_antiguedad
+                        fmt = f"{mensual:.0f}"
+                        txt_freq += f"- **{prio}:** {fmt}\n"
+                
+                if not txt_freq: txt_freq = "N/A"
+                st.markdown(txt_freq)
 
         st.markdown("---")
 

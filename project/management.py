@@ -3,6 +3,7 @@ import func.temporal as temporal
 import func.bertopic as bertopic
 import func.volume as volume
 import func.tf_idf as tfidf
+from datetime import date
 import streamlit as st
 import pandas as pd
 import sys
@@ -101,12 +102,16 @@ def filtros(df):
             serie_fecha = pd.to_datetime(df[columna], errors='coerce')
             f_min = serie_fecha.min().to_pydatetime().date()
             f_max = serie_fecha.max().to_pydatetime().date()
+
+            max_calendar = date(f_max.year, 12, 31)
+            min_calendar = date(f_min.year, 1, 1)
+
             if columna == 'Fecha_Inicio':
-                fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_min, min_value=f_min, max_value=f_max)
+                fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_min, min_value=min_calendar, max_value=max_calendar, format = "DD-MM-YYYY")
                 df = df[pd.to_datetime(df['Fecha_Inicio']).dt.date >= fecha_sel]
                 
             elif columna == 'Fecha_Fin':
-                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=f_min, max_value=f_max)
+                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=min_calendar, max_value=max_calendar, format = "DD-MM-YYYY")
                 df = df[pd.to_datetime(df['Fecha_Fin']).dt.date <= fecha_sel]
         elif(columna == 'Duracion'): 
             min = int(df[columna].min())

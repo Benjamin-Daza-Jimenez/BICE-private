@@ -5,6 +5,7 @@ import func.bertopic as bertopic
 from datetime import datetime
 import func.volume as volume
 import func.tf_idf as tfidf
+from datetime import date
 import func.data as data
 import func.jira as jira
 import streamlit as st
@@ -129,12 +130,16 @@ def filtros(df):
             serie_fecha = pd.to_datetime(df[columna], errors='coerce')
             f_min = serie_fecha.min().to_pydatetime().date()
             f_max = serie_fecha.max().to_pydatetime().date()
+ 
+            hoy = date.today() 
+            techo_calendario = max(hoy, f_max)
+
             if columna == 'Fecha_Inicio':
-                fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_min, min_value=f_min, max_value=f_max)
+                fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_max, min_value=f_min, max_value=techo_calendario, format = "DD-MM-YYYY")
                 df = df[pd.to_datetime(df['Fecha_Inicio']).dt.date >= fecha_sel]
                 
             elif columna == 'Fecha_Fin':
-                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=f_min, max_value=f_max)
+                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=f_min, max_value=techo_calendario, format = "DD-MM-YYYY")
                 df = df[pd.to_datetime(df['Fecha_Fin']).dt.date <= fecha_sel]
         elif(columna == 'Duracion'): 
             min = int(df[columna].min())

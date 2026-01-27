@@ -1,6 +1,7 @@
 import func.ficha_operation as ficha
 import func.causa_solucion as c_s
 import func.bertopic as bertopic
+from datetime import date
 import streamlit as st
 import pandas as pd
 import sys
@@ -48,17 +49,21 @@ def cambiar_seccion(nombre):
 def filtros(df):
     st.sidebar.header("Filtros Activos")
     filtros_a_usar = st.sidebar.multiselect("¿Qué columnas deseas filtrar?", FILTROS)
-    for columna in filtros_a_usar:
+    for columna in filtros_a_usar: 
         if columna in ['Fecha_Inicio', 'Fecha_Fin']:
             serie_fecha = pd.to_datetime(df[columna], errors='coerce')
             f_min = serie_fecha.min().to_pydatetime().date()
             f_max = serie_fecha.max().to_pydatetime().date()
+
+            max_calendar = date(f_max.year, 12, 31)
+            min_calendar = date(f_min.year, 1, 1)
+
             if columna == 'Fecha_Inicio':
-                fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_min, min_value=f_min, max_value=f_max)
+                fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_min, min_value=min_calendar, max_value=max_calendar)
                 df = df[pd.to_datetime(df['Fecha_Inicio']).dt.date >= fecha_sel]
                 
             elif columna == 'Fecha_Fin':
-                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=f_min, max_value=f_max)
+                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=min_calendar, max_value=max_calendar)
                 df = df[pd.to_datetime(df['Fecha_Fin']).dt.date <= fecha_sel]
         elif(columna == 'Duracion'): 
             min = int(df[columna].min())

@@ -13,7 +13,7 @@ import io
 import os
 
 def bertopic_app(df, columnas, verbose=True):
-    df_temp = df.copy()
+    df_temp = df.copy().reset_index(drop=True)
 
     try:
         stop_words_es = stopwords.words('spanish')
@@ -26,33 +26,42 @@ def bertopic_app(df, columnas, verbose=True):
     for columna in columnas:
         print(f"Procesando columna: {columna} con BERTopic")
 
-        df_temp = data.clean_bert(df_temp, columna)
-        docs = df_temp['temp_para_modelo'].astype(str).tolist()
+        mask = df_temp[columna].astype(str) != "Sin Información"
+        df_validos = df_temp[mask].copy()
 
-        model = BERTopic(language="multilingual", vectorizer_model=vectorizer_model, verbose=verbose)
-        topics, _ = model.fit_transform(docs)
+        if not df_validos.empty:
+            df_validos = data.clean_bert(df_validos, columna)
+            docs = df_validos['temp_para_modelo'].astype(str).tolist()
 
-        new_topics = topics
-        if len(set(topics) - {-1}) > 0 and -1 in topics:
-            try:
-                new_topics = model.reduce_outliers(docs, topics, strategy="c-tf-idf")
-                model.update_topics(docs, new_topics)
-            except:
-                print("No se pudieron reducir outliers, manteniendo temas originales.")
+            model = BERTopic(language="multilingual", vectorizer_model=vectorizer_model, verbose=verbose)
+            topics, _ = model.fit_transform(docs)
 
-        topic_info = model.get_topic_info().set_index('Topic')['Name'].to_dict()
+            new_topics = topics
+            if len(set(topics) - {-1}) > 0 and -1 in topics:
+                try:
+                    new_topics = model.reduce_outliers(docs, topics, strategy="c-tf-idf")
+                    model.update_topics(docs, new_topics)
+                except:
+                    print("No se pudieron reducir outliers, manteniendo temas originales.")
 
-        nombres_temas = []
-        for t in new_topics:
-            nombre = topic_info.get(t, "Sin Clasificar")
+            topic_info = model.get_topic_info().set_index('Topic')['Name'].to_dict()
 
-            nombre_limpio = nombre.split('_', 1)[-1].replace('_', ' ').title() if '_' in nombre else nombre
-            nombres_temas.append(nombre_limpio)
-        
+            nombres_validos = []
+            for t in new_topics:
+                nombre = topic_info.get(t, "Sin Clasificar")
+                nombre_limpio = nombre.split('_', 1)[-1].replace('_', ' ').title() if '_' in nombre else nombre
+                nombres_validos.append(nombre_limpio)
+
+            columna_final = pd.Series("No aplica (Sin Texto)", index=df_temp.index)
+            columna_final.loc[df_validos.index] = nombres_validos
+
+        else:
+            columna_final = pd.Series("Sin Información", index=df_temp.index)
+
         idx_original = df_temp.columns.get_loc(columna)
         nombre_nueva_col = f"Temas_{columna}"
 
-        df_temp.insert(idx_original + 1, nombre_nueva_col, nombres_temas)
+        df_temp.insert(idx_original + 1, nombre_nueva_col, columna_final)
         if 'temp_para_modelo' in df_temp.columns:
             df_temp.drop(columns=['temp_para_modelo'], inplace=True)
     
