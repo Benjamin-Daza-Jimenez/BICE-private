@@ -66,7 +66,7 @@ BICE-Private
 └── README.md
 ```
 
-## Funcionalidades de Gestión
+## 💼 Funcionalidades de Gestión
 
 ### Filtros
 
@@ -96,7 +96,7 @@ El sistema implementa categorización automática mediante modelos de IA para cl
 
 Se representa la distribución de la actividad diaria mediante una Campana de Gauss, visualizando la concentración del volumen de tickets a lo largo del tiempo. Este análisis permite identificar el comportamiento estándar del servicio y detectar estadísticamente desviaciones o días con una carga de trabajo fuera de lo normal.
 
-## Funcionalidades de Operación
+## 🛠️ Funcionalidades de Operación
 
 ### Filtros
 

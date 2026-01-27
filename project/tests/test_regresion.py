@@ -50,9 +50,9 @@ class TestRegresion(unittest.TestCase):
     def test_Regresion_Prioridad(self):
         dfResultado = regresion.regresion_data(self.dfTest.copy()) 
         """Verifica que la columna 'Prioridad' haya sido convertida a numérico correctamente"""
-        prioridad_esperada = [1, 2, 3, 4, 5, 5, 4]
+        prioridad_esperada = [1, 2, 3, 4, 5, 5, 4, 2, 1]
         self.assertListEqual(dfResultado['Prioridad'].tolist(), prioridad_esperada)
     
 
-
+    
         
