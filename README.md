@@ -48,6 +48,10 @@ make run
 | `make run` | Lanza la aplicación de Streamlit (`app.py`). |
 | `make test` | Ejecuta de forma automática todas las pruebas unitarias en `tests/`. |
 | `make freeze` | Actualiza el archivo `requirements.txt` con las librerías instaladas. |
+| `source venv/bin/activate` | Activar el entorno virtual si es requerido. |
+| `deactivate` | Desactivar el entorno virtual si está activo. |
+
+
 
 ## 🗂️ Estructura del Proyecto
 
@@ -56,10 +60,11 @@ BICE-Private
 ├── project/                # Código fuente y entorno de ejecución
 │   ├── data/               # Almacena archivos Excel que se manejan
 │   ├── func/               # Archivos con la lógica
-│   ├── reports/            # Almacena gráficos generados
 │   ├── tests/              # Pruebas unitarias
 │   ├── venv/               # Entorno virtual
-│   ├── app.py              # Interfaz de usuario (Streamlit)
+│   ├── app.py              # Interfaz del menú principal (Streamlit)
+│   ├── management.py       # Interfaz de Gestión (Streamlit)
+│   ├── operation.py        # Interfaz de Operación (Streamlit)
 │   ├── Makefile            # Comandos de automatización
 │   └── requirements.txt    # Librerías necesarias para el proyecto
 ├── .gitignore
