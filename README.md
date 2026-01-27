@@ -48,6 +48,11 @@ make run
 | `make run` | Lanza la aplicación de Streamlit (`app.py`). |
 | `make test` | Ejecuta de forma automática todas las pruebas unitarias en `tests/`. |
 | `make freeze` | Actualiza el archivo `requirements.txt` con las librerías instaladas. |
+
+## 🏛️ Diccionario de Comandos (Entorno Virtual)
+
+| Comando | Acción |
+| :--- | :--- |
 | `source venv/bin/activate` | Activar el entorno virtual si es requerido. |
 | `deactivate` | Desactivar el entorno virtual si está activo. |
 
