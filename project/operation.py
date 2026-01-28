@@ -31,7 +31,9 @@ COLUMNS_SELECTED = [
     'Causa',
     'Temas_Causa',
     'Solucion',
-    'Temas_Solucion'
+    'Temas_Solucion',
+    'Resumen',
+    'Temas_Resumen'
 ]
 
 TEMAS = [
@@ -149,17 +151,25 @@ def operation_app(df_original):
 
 # ---------------------------------- ACTIVO SW / FICHA ---------------------------------------
     elif st.session_state.seccion_op == "Activo_SW/Ficha":
+        st.markdown("## 🏥 Ficha Técnica Unificada")
+        st.caption("Resumen estratégico para toma de decisiones rápida.")
+        df = df.copy()
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
         ficha.ficha_tecnica(df, 'Activo_SW')
 
 # ---------------------------------- ACTIVO SW / PRED ---------------------------------------
     elif st.session_state.seccion_op == "Activo_SW/Pred":
         df = df.copy()
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        df = df[mask_procesados].copy()
 
         st.title("Causa y Solución por Activo de Software")
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.")
+
         opcion = st.selectbox("Seleccione el Activo de Software para el Análisis", df['Activo_SW'].unique(), index=None, placeholder="Seleccione un Activo de Software")
         if opcion:
             df = df[df['Activo_SW'] == opcion]
-        
             c_s.causa_solucion(df)
             
 # --------------------------------------- REPORTE ----------------------------------------
@@ -181,13 +191,21 @@ def operation_app(df_original):
 
 # ---------------------------------- REPORTE / FICHA ---------------------------------------
     elif st.session_state.seccion_op == "Reporte/Ficha":
+        st.markdown("## 🏥 Ficha Técnica Unificada")
+        st.caption("Resumen estratégico para toma de decisiones rápida.")
+        df = df.copy()
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
         ficha.ficha_tecnica(df, 'Reporte')
 
 # ---------------------------------- REPORTE / PRED ---------------------------------------
     elif st.session_state.seccion_op == "Reporte/Pred":
         df = df.copy()
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        df = df[mask_procesados].copy()
 
         st.title("Causa y Solución por Servicio Reportado")
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.")
         opcion = st.selectbox("Seleccione el Servicio Reportado para el Análisis", df['Reporte'].unique(), index=None, placeholder="Seleccione un Servicio Reportado")
         if opcion:
             df = df[df['Reporte'] == opcion]

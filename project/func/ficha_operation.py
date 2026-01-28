@@ -1,10 +1,17 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+
+TEMAS = [
+    'Temas_Resumen', 
+    'Temas_Descripcion', 
+    'Temas_Causa', 
+    'Temas_Solucion'
+    ]
 
 def ficha_tecnica(df, col):
-    st.markdown("## 🏥 Ficha Técnica Unificada")
-    st.caption("Resumen estratégico para toma de decisiones rápida.")
+    mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+    total = len(df)
+    no_cat = len(df[~mask_procesados])
 
     col_counts = df[col].value_counts()
     lista_col = col_counts.index.tolist()
@@ -45,6 +52,7 @@ def ficha_tecnica(df, col):
         with kpi1:
             with st.container(border=True):
                 st.metric("Total Incidentes", total_casos)
+                st.markdown(f"{len(df_ficha[~mask_procesados])} no categorizados")
                 st.caption(f"📅 **Rango:**\n{txt_fechas}")
         with kpi2:
             with st.container(border=True):
@@ -84,6 +92,9 @@ def ficha_tecnica(df, col):
                 st.markdown(txt_freq)
 
         st.markdown("---")
+        
+        st.markdown(f"### Análisis de Causa, Solución y Asignación de Equipo", help=f"Esta información es en base a los tickets categorizados ({total - no_cat} tickets).")
+        df_ficha = df_ficha[mask_procesados].copy()
 
         c_causa, c_solucion, c_equipo = st.columns(3)
         top_causas_series = df_ficha['Temas_Causa'].value_counts(normalize=True).head(3)

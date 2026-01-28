@@ -235,14 +235,18 @@ def management_app(df_original):
 
 # ------------------------------------ TEMPORAL/ANUAL ------------------------------------
     elif st.session_state.seccion_ma == "Temporal/Anual":
-        st.title("Análisis Anual")
         df_temporal = df_temporal.copy()
+        st.title("Análisis Anual")
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
         temporal.anual_plotly(df_temporal)
 
 # ----------------------------------- TEMPORAL/MENSUAL -----------------------------------
     elif st.session_state.seccion_ma == "Temporal/Mensual":
-        st.title("Análisis Mensual")
         df_temporal = df_temporal.copy()
+        st.title("Análisis Mensual")
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
         temporal.mensual_plotly(df_temporal)
         
 # -------------------------------------- REGRESIÓN ---------------------------------------
@@ -341,8 +345,12 @@ def management_app(df_original):
 
 # --------------------------------------- BERTopic ---------------------------------------
     elif st.session_state.seccion_ma == "Texto/BERTopic":
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        df = df[mask_procesados].copy()
         st.title("Análisis de Temas para columnas de Texto")
-        df = df.copy()
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.")
+
+        st.divider()
         bertopic.bertopic_graph_plotly(df)
 
 # ----------------------------------- Actualizar Datos -----------------------------------
@@ -353,7 +361,13 @@ def management_app(df_original):
      
 # ----------------------------------- Campana de Gauss -----------------------------------
     elif st.session_state.seccion_ma == "Volumen/General":
-        st.title("Análisis de Volumen de Incidentes")
         df = df.copy()
+        
+
+        st.title("Análisis de Volumen de Incidentes")
+        mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
+        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+
+        st.divider()
         volume.grafico_gauss(df)
         
