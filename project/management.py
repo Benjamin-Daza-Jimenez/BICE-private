@@ -15,8 +15,8 @@ if getattr(sys, 'frozen', False):
 FILTROS = [
     'Prioridad',
     'Equipo',
-    'Fecha_Inicio',
-    'Fecha_Fin',
+    'Desde (Fecha Inicio)',
+    'Hasta (Fecha Inicio)',
     'Duracion',
     'Activo_SW',
     'Reporte',
@@ -97,21 +97,23 @@ def filtros(df):
     st.sidebar.header("Filtros Activos")
     filtros_a_usar = st.sidebar.multiselect("¿Qué columnas deseas filtrar?", FILTROS)
     for columna in filtros_a_usar:
-        if columna in ['Fecha_Inicio', 'Fecha_Fin']:
-            serie_fecha = pd.to_datetime(df[columna], errors='coerce')
+        if columna in ['Desde (Fecha Inicio)', 'Hasta (Fecha Inicio)']:
+            serie_fecha = pd.to_datetime(df["Fecha_Inicio"], errors='coerce')
             f_min = serie_fecha.min().to_pydatetime().date()
             f_max = serie_fecha.max().to_pydatetime().date()
 
             max_calendar = date(f_max.year, 12, 31)
             min_calendar = date(f_min.year, 1, 1)
 
-            if columna == 'Fecha_Inicio':
+            if columna == 'Desde (Fecha Inicio)':
                 fecha_sel = st.sidebar.date_input("Desde (Fecha Inicio)", value=f_min, min_value=min_calendar, max_value=max_calendar, format = "DD-MM-YYYY")
                 df = df[pd.to_datetime(df['Fecha_Inicio']).dt.date >= fecha_sel]
+                print(fecha_sel)
                 
-            elif columna == 'Fecha_Fin':
-                fecha_sel = st.sidebar.date_input("Hasta (Fecha Fin)", value=f_max, min_value=min_calendar, max_value=max_calendar, format = "DD-MM-YYYY")
-                df = df[pd.to_datetime(df['Fecha_Fin']).dt.date <= fecha_sel]
+            elif columna == 'Hasta (Fecha Inicio)':
+                fecha_sel = st.sidebar.date_input("Hasta (Fecha Inicio)", value=f_max, min_value=min_calendar, max_value=max_calendar, format = "DD-MM-YYYY")
+                df = df[pd.to_datetime(df['Fecha_Inicio']).dt.date <= fecha_sel]
+                print(fecha_sel)
         elif(columna == 'Duracion'): 
             min = int(df[columna].min())
             max = int(df[columna].max())
@@ -142,7 +144,7 @@ def management_app(df_original):
     st.sidebar.button("Volver al menú principal", on_click=cambiar_seccion, args=("Actualizar",))
     
     df = filtros(df_original.copy())
-    df_temporal = temporal.temporal_app(df.copy()) 
+    df_temporal = temporal.temporal_app(df) 
 
 # ------------------------------------ VISUALIZACIÓN -------------------------------------
     if st.session_state.seccion_ma == "Visualizacion":

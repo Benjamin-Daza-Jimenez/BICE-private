@@ -162,9 +162,6 @@ def temporal_app(df_original):
     # Crear un nuevo DataFrame solo con las columnas de fecha
     df = df_original[['Fecha_Inicio', 'Duracion']].copy()
 
-    # Limpiar el DataFrame
-    df = data.clean(df, ['Fecha_Inicio', 'Duracion'], 'Fecha_Inicio')
-
     # Extraer características temporales
     df['Año'] = df['Fecha_Inicio'].dt.year 
     df['Mes'] = df['Fecha_Inicio'].dt.month
