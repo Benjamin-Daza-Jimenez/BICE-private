@@ -58,7 +58,7 @@ make run
 | `source venv/bin/activate` | Activar el entorno virtual si es requerido. |
 | `deactivate` | Desactivar el entorno virtual si está activo. |
 
-## Contenido Entorno Virtual
+## Contenido Archivo .env
 Se debe crear un archivo .env en la carpeta project con el siguiente contenido:
 ```text
 JIRA_EMAIL = email corporativo de quien generó el token
