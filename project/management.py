@@ -2,7 +2,6 @@ import func.regresion as regresion
 import func.temporal as temporal
 import func.bertopic as bertopic
 import func.volume as volume
-import func.tf_idf as tfidf
 from datetime import date
 import streamlit as st
 import pandas as pd
@@ -139,8 +138,7 @@ def management_app(df_original):
 
     st.sidebar.title("Navegación") 
     st.sidebar.button("Ver Tablas de Datos", on_click=cambiar_seccion, args=("Visualizacion",))
-    st.sidebar.button("Análisis y Generación de Gráficos", on_click=cambiar_seccion, args=("Graficos",))
-    st.sidebar.button("Análisis de Regresión", on_click=cambiar_seccion, args=("Regresion",))
+    st.sidebar.button("Generación de Gráficos", on_click=cambiar_seccion, args=("Graficos",))
     st.sidebar.button("Volver al menú principal", on_click=cambiar_seccion, args=("Actualizar",))
     
     df = filtros(df_original.copy())
@@ -151,7 +149,7 @@ def management_app(df_original):
         df = df.copy()
 
         st.title("📊 Panel de Visualización y Exportación")
-        st.markdown("Consulta y descarga los datos procesados para el análisis.")
+        st.write("---")
 
         st.subheader("Base de Datos Maestra (Jira) | Cantidad total de registros: " + str(len(df)))
         st.dataframe(df, width='stretch', hide_index=True)
@@ -181,64 +179,61 @@ def management_app(df_original):
 # -------------------------------------- GRÁFICOS ----------------------------------------
     elif st.session_state.seccion_ma == "Graficos":
         st.title("📊 Centro de Inteligencia y Análisis")
-        st.markdown("""
-            Bienvenido al panel de visualización. Seleccione la dimensión de análisis que desea explorar 
-            para obtener insights detallados sobre la operación.
-        """)
         st.write("---")
 
         # --- SECCIÓN 1: ANÁLISIS TEMPORAL ---
         st.subheader("🕒 Análisis de Tendencias Temporales")
         col1, col2 = st.columns(2)
         with col1:
-            st.info("**Evolución Histórica**\n\nVisualice el comportamiento de los tickets a lo largo de los años a través de gráficos de barras.")
-            if st.button("Ver Gráfico Anual", use_container_width=True):
+            st.warning("**Evolución Histórica**\n\nVisualice la relación entre el volumen mensual de tickets y su tiempo promedio de atención para identificar tendencias de eficiencia.")
+            if st.button("Ver Gráfico de Barra Anual", use_container_width=True):
                 cambiar_seccion("Temporal/Anual")
                 st.rerun()
         
         with col2:
-            st.info("**Intensidad Operativa**\n\nMapa de calor detallado por día y mes para detectar picos de carga.")
+            st.warning("**Intensidad Operativa**\n\nAnalice la carga de trabajo desde una escala mensual a una diaria para detectar patrones semanales, picos críticos o intermitencias.")
             if st.button("Ver Mapa de Calor Mensual", use_container_width=True):
                 cambiar_seccion("Temporal/Mensual")
                 st.rerun()
         st.write("")
 
         # --- SECCIÓN 2: ANÁLISIS DE TEXTO (IA) ---
-        st.subheader("🏷️ Inteligencia de Texto y Tópicos")
+        st.subheader("⚖️ Métricas de Volumen y Tópicos")
         col3, col4 = st.columns(2)
         with col3:
-            st.success("**Relevancia de Palabras**\n\nIdentifique las palabras clave más significativas en las columnas descriptivas.")
-            if st.button("Ver Análisis de Palabras", use_container_width=True):
-                cambiar_seccion("Texto/TFIDF")
+            st.success("**Concentración de Carga**\n\nVisualice la distribución del volumen diario mediante una Campana de Gauss para identificar patrones de tickets rutinarios, de alto esfuerzo o críticos.")
+            if st.button("Ver Gráfico de Campana", use_container_width=True):
+                cambiar_seccion("Volumen/General") 
                 st.rerun()
 
         with col4:
-            st.success("**Agrupación por Temas**\n\nCategorización automática de incidentes mediante modelos de IA, visualizado en un gráfico de Paretto.")
+            st.success("**Agrupación por Temas**\n\nAnalice mediante un gráfico de Pareto los temas categorizados por IA, evidenciando el 80% de los conceptos que concentran la narrativa de toda la operación.")
             if st.button("Ver Gráfico de Pareto", use_container_width=True):
                 cambiar_seccion("Texto/BERTopic")
                 st.rerun()
         st.write("")
-
-        # --- SECCIÓN 3: VOLUMEN ---
-        st.subheader("⚖️ Métricas de Volumen")
-        col5, col6 = st.columns(2)
-        
-        with col5:
-            st.warning("**Concentración de Carga**\n\nAnálisis de distribución de volumen de tickets según su actividad diaria mediante gráfico de Campana de Gauss.")
-            if st.button("Ver Gráfico de Campana", use_container_width=True):
-                cambiar_seccion("Volumen/General") 
-                st.rerun()
-        
-        with col6:
-            # Espacio para futuro gráfico o una métrica rápida
-            st.write("")
 
 # ------------------------------------ TEMPORAL/ANUAL ------------------------------------
     elif st.session_state.seccion_ma == "Temporal/Anual":
         df_temporal = df_temporal.copy()
         st.title("Análisis Anual")
         mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")    
         temporal.anual_plotly(df_temporal)
 
 # ----------------------------------- TEMPORAL/MENSUAL -----------------------------------
@@ -246,111 +241,45 @@ def management_app(df_original):
         df_temporal = df_temporal.copy()
         st.title("Análisis Mensual")
         mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")   
         temporal.mensual_plotly(df_temporal)
         
-# -------------------------------------- REGRESIÓN ---------------------------------------
-    elif st.session_state.seccion_ma == "Regresion":
-        st.title("Modelo de Regresión")
-        df = df.copy()
-        if df.empty:
-            st.warning("⚠️ El dataset está vacío. Ajusta los filtros laterales para obtener datos.")
-        else:
-            df_pool = regresion.regresion_data(df)
-
-            col1, col2 = st.columns(2)
-
-            with col1:
-                objetivo = st.selectbox(
-                "Selecciona variable objetivo (Y):", 
-                options=REGRESION,
-                index=REGRESION.index('Duracion') if 'Duracion' in REGRESION else 0,
-                help="La variable objetivo es la que el modelo intentará predecir basándose en las variables predictoras seleccionadas."
-            )
-                
-            with col2:
-                opciones_predictoras = [c for c in REGRESION if c != objetivo]
-                predictoras_sel = st.multiselect(
-                    "Selecciona variables predictoras (X):", 
-                    options=opciones_predictoras,
-                    help="Las variables predictoras son las que el modelo utilizará para hacer predicciones sobre la variable objetivo."
-                )
-
-            if predictoras_sel and objetivo:
-                cols_x = []
-                for col in predictoras_sel:
-                    if col in ['Fecha_Inicio_Semanal', 'Fecha_Inicio_Mensual', 'Fecha_Inicio_Anual']:
-                        componentes = [c for c in df_pool.columns if c.startswith(col) and (c.endswith('_Sen') or c.endswith('_Cos'))]
-                        cols_x.extend(componentes)
-                    elif col == 'Resuelto_con':
-                        categorias_ohe = [c for c in df_pool.columns if c.startswith('Resuelto_con_')]
-                        cols_x.extend(categorias_ohe)
-                    else:
-                        if col in df_pool.columns:
-                            cols_x.append(col)
-                
-                col_y = [c for c in df_pool.columns if c == objetivo][0]
-
-                df_modelo = df_pool[cols_x + [col_y]].copy()
-                df_modelo = df_modelo.dropna()
-
-                x = df_modelo[cols_x]
-                y = df_modelo[col_y]
-                
-                mse, r2, importancias = regresion.tree_regression(x, y)
-
-                st.subheader(f"Datos de Regresión Procesados: {len(df_modelo)} registros")
-                st.dataframe(df_modelo, width='stretch')
-
-                st.subheader("Resultados del Modelo de Regresión")
-                st.markdown(f"- **Mean Squared Error (MSE):** {mse:.4f}",
-                            help="Representa qué tan lejos están las predicciones de la realidad. "
-                                    "Al estar al cuadrado, castiga con más fuerza las predicciones que fallaron por mucho tiempo. "
-                                    "¡Mientras más bajo sea este número, mejor!")
-                st.markdown(f"- **Coeficiente de Determinación (R²):** {r2*100:.4f}%",
-                            help="Este porcentaje indica cuánto entiende el modelo el comportamiento de los incidentes. "
-                                    "Un 100% sería una predicción perfecta, mientras que un 0% sería lo mismo que adivinar al azar.")
-                st.subheader("Importancia de las Variables")
-                st.dataframe(importancias, width='stretch')
-
-# ---------------------------------------- TF-IDF ----------------------------------------
-    elif st.session_state.seccion_ma == "Texto/TFIDF":
-        st.title("Análisis de Texto con TF-IDF")
-        
-        columnas = ['Resumen', 'Descripcion', 'Causa', 'Solucion']
-        df_tfidf = df[columnas].copy()
-
-        df_tfidf = tfidf.tfidf_app(df_tfidf, columnas)
-        
-        cols_causa = [c for c in df_tfidf.columns if c.startswith('tfidf_Causa_')]
-        causas = df_tfidf[cols_causa].sum().sort_values(ascending=False).head(10)
-
-        cols_solucion = [c for c in df_tfidf.columns if c.startswith('tfidf_Solucion_')]
-        soluciones = df_tfidf[cols_solucion].sum().sort_values(ascending=False).head(10)
-
-        cols_resumen = [c for c in df_tfidf.columns if c.startswith('tfidf_Resumen_')]
-        resumen = df_tfidf[cols_resumen].sum().sort_values(ascending=False).head(10)
-
-        cols_descripcion = [c for c in df_tfidf.columns if c.startswith('tfidf_Descripcion_')]
-        descripcion = df_tfidf[cols_descripcion].sum().sort_values(ascending=False).head(10)
-
-        st.subheader("Top 10 Palabras en Causa Raíz")
-        st.dataframe(causas, width='stretch')
-        st.subheader("Top 10 Palabras en Solución")
-        st.dataframe(soluciones, width='stretch')
-        st.subheader("Top 10 Palabras en Resumen")
-        st.dataframe(resumen, width='stretch')
-        st.subheader("Top 10 Palabras en Descripción")
-        st.dataframe(descripcion, width='stretch')
-
 # --------------------------------------- BERTopic ---------------------------------------
     elif st.session_state.seccion_ma == "Texto/BERTopic":
         mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
         df = df[mask_procesados].copy()
         st.title("Análisis de Temas para columnas de Texto")
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.")
-
-        st.divider()
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")
         bertopic.bertopic_graph_plotly(df)
 
 # ----------------------------------- Actualizar Datos -----------------------------------
@@ -366,8 +295,21 @@ def management_app(df_original):
 
         st.title("Análisis de Volumen de Incidentes")
         mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
-
-        st.divider()
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")
         volume.grafico_gauss(df)
         

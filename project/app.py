@@ -97,6 +97,7 @@ st.set_page_config(page_title="Selector de Proceso", layout="wide")
 # Inicialización de estado
 if 'df' not in st.session_state:
     st.session_state.df = None
+    st.session_state.automatico = True
 if 'seccion' not in st.session_state:
     st.session_state.seccion = "Eleccion"
 if 'seccion_ma' not in st.session_state:
@@ -128,18 +129,30 @@ if st.session_state.df is None:
     st.title("Bienvenido a BICE Insight")
     st.write("A continuación, cargaremos los datos desde Jira o desde un archivo local si está disponible y es reciente.")
     
-    ruta_local, fecha_file = get_local_file()
-    es_antiguo = (datetime.now() - fecha_file).days > 7 if fecha_file else True
+    if st.session_state.automatico:
+        ruta_local, fecha_file = get_local_file()
+        es_antiguo = (datetime.now() - fecha_file).days > 7 if fecha_file else True
 
-    if es_antiguo:
-        with st.status("Descargando desde Jira...", expanded=True) as status:
-            df = jira.jira_get()
-            necesita_transformacion = True
-            status.update(label="Descarga completada.", state="complete", expanded=False)
-    else:
-        with st.spinner("Cargando base de datos local..."):
-            df = pd.read_excel(ruta_local, sheet_name='Base')
+        if es_antiguo:
+            with st.status("Descargando desde Jira...", expanded=True) as status:
+                df = jira.jira_get()
+                necesita_transformacion = True
+                status.update(label="Descarga completada.", state="complete", expanded=False)
+        else:
+            with st.spinner("Cargando base de datos local..."):
+                df = pd.read_excel(ruta_local, sheet_name='Base')
             necesita_transformacion = not any(col in df.columns for col in TEMAS)
+    else:
+        archivo_subido = st.file_uploader("Sube tu archivo Excel de Jira", type=['xlsx'])
+        if archivo_subido is not None:
+            with st.spinner("Procesando archivo subido..."):
+                df = pd.read_excel(archivo_subido)
+                necesita_transformacion = not any(col in df.columns for col in TEMAS)
+                st.success("Archivo cargado con éxito.")
+        else:
+            st.info("Por favor, sube un archivo para continuar.")
+            st.stop()
+        st.session_state.automatico = True
     
     if necesita_transformacion:
         with st.status("Transformando datos...", expanded=True) as status:
@@ -188,11 +201,15 @@ else:
 # ---------------------------------------- ELECCIÓN -----------------------------------------
     if st.session_state.seccion == "Eleccion":
         col1, col2 = st.columns(2)
+        col3, col4 = st.columns(2)
         with col1:
             st.button("📊 Gestión", on_click=cambiar_seccion, args=["Gestion"], width='stretch')
         with col2:
             st.button("⚙️ Operación", on_click=cambiar_seccion, args=["Operacion"], width='stretch')
-        st.button("🔄 Actualizar Datos de Jira", on_click=cambiar_seccion, args=["Actualizar"])
+        with col3:
+            st.button("🔄 Actualizar Datos de Jira", on_click=cambiar_seccion, args=["Actualizar"], width='stretch')
+        with col4:
+            st.button("🔄 Actualizar Datos de Jira Manual", on_click=cambiar_seccion, args=["Actualizar/Manual"], width='stretch')
 
 # ---------------------------------------- GESTIÓN -----------------------------------------
     elif st.session_state.seccion == "Gestion":
@@ -204,7 +221,7 @@ else:
         df = df.copy()
         operation.operation_app(df)
 
-# ---------------------------------------- OPERACIÓN -----------------------------------------  
+# -------------------------------------- ACTUALIZACIÓN ---------------------------------------  
     elif st.session_state.seccion == "Actualizar":
         st.title("Actualización de Datos desde Jira")
 
@@ -217,5 +234,20 @@ else:
             for archivo in archivos:
                 os.remove(archivo)
             st.rerun()
+    
+    elif st.session_state.seccion == "Actualizar/Manual":
+        st.title("Actualización de Datos desde Jira de forma Manual")
+
+        if st.button("Iniciar Actualización de Datos"):
+            st.session_state.df = None
+            st.session_state.automatico = False
+            st.session_state.seccion_op = "Visualizacion"
+            st.session_state.seccion = "Eleccion"
+            # Borrar excel
+            archivos = glob.glob("data/Jira_*.xlsx")
+            for archivo in archivos:
+                os.remove(archivo)
+            st.rerun()
+
 
 

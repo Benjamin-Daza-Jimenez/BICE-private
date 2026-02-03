@@ -9,6 +9,7 @@ TEMAS = [
     ]
 
 def ficha_tecnica(df, col):
+
     mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
     total = len(df)
     no_cat = len(df[~mask_procesados])
@@ -48,102 +49,151 @@ def ficha_tecnica(df, col):
         # Diseño
         st.divider()
 
+        st.markdown(f"### Resumen de Ficha Técnica para **{selector}**", help=f"Análisis detallado de los casos asociados a {col}: {selector}.")
         kpi1, kpi2, kpi3, kpi4 = st.columns(4)
         with kpi1:
             with st.container(border=True):
-                st.metric("Total Incidentes", total_casos)
-                st.markdown(f"{len(df_ficha[~mask_procesados])} no categorizados")
-                st.caption(f"📅 **Rango:**\n{txt_fechas}")
+                st.markdown(f"#### **📋 Total de Casos**", help=f"Número total de casos para el {col} seleccionado.")
+                st.markdown(f"## {total_casos}")
+                st.write("&nbsp;")
+                st.markdown(f"#### **🚫 Sin Categoría**", help=f"Número de casos sin categoría para el {col} seleccionado.")
+                st.markdown(f"## {len(df_ficha[~mask_procesados])}")
         with kpi2:
             with st.container(border=True):
-                st.markdown("**📊 Por Prioridad**")
-                txt_prio = ""
-                for prio in orden_prioridad:
-                    val = int(grupo.loc[prio, 'Conteo'])
+                st.markdown("#### **📊 Casos x Prioridad**", help=f"Número de casos por prioridad para el {col} seleccionado.")
+                st.write("&nbsp;")
+                for p in orden_prioridad:
+                    val = int(grupo.loc[p, 'Conteo'])
                     if val > 0:
-                        txt_prio += f"- **{prio}:** {val}\n"
-                
-                if not txt_prio: txt_prio = "Sin datos"
-                st.markdown(txt_prio)
+                        c_lab, c_val = st.columns([2, 1])
+                        c_lab.write(p)
+                        c_val.write(f"**{val}**")
+                    else:
+                        c_lab, c_val = st.columns([2, 1])
+                        c_lab.write(p)
+                        c_val.write(f"**-**")
         with kpi3:
             with st.container(border=True):
-                st.markdown("**⏱️ Tiempo Resolución**", help="Duración promedio por prioridad")
-                txt_time = ""
-                for prio in orden_prioridad:
-                    val = grupo.loc[prio, 'Conteo']
+                st.markdown("#### **⏱️ Tiempo Resolución**", help=f"Duración promedio de resolución por prioridad para el {col} seleccionado.")
+                st.write("&nbsp;")
+                for p in orden_prioridad:
+                    val = grupo.loc[p, 'Conteo']
                     if val > 0:
-                        horas = grupo.loc[prio, 'Duracion_Prom']
-                        txt_time += f"- **{prio}:** {horas:.0f} h\n"
-                
-                if not txt_time: txt_time = "N/A"
-                st.markdown(txt_time)
+                        c_lab, c_val = st.columns([2, 1])
+                        c_lab.write(p)
+                        c_val.write(f"**{grupo.loc[p, 'Duracion_Prom']:.0f}h**")
+                    else:
+                        c_lab, c_val = st.columns([2, 1])
+                        c_lab.write(p)
+                        c_val.write(f"**-**")
+
         with kpi4:
             with st.container(border=True):
-                st.markdown("**📅 Frec. Mensual**")
-                txt_freq = ""
-                for prio in orden_prioridad:
-                    val = grupo.loc[prio, 'Conteo']
-                    if val > 0:
-                        mensual = val / meses_antiguedad
-                        fmt = f"{mensual:.0f}"
-                        txt_freq += f"- **{prio}:** {fmt}\n"
-                
-                if not txt_freq: txt_freq = "N/A"
-                st.markdown(txt_freq)
+                st.markdown("#### **📅 Casos Mensuales**", help=f"Cantidad de casos por mes para el {col} seleccionado.")
+                st.write(f"Período: {txt_fechas}")
+                for p in orden_prioridad:
+                    if grupo.loc[p, 'Conteo'] > 0:
+                        mensual = grupo.loc[p, 'Conteo'] / meses_antiguedad
+                        c_lab, c_val = st.columns([2, 1])
+                        c_lab.write(p)
+                        c_val.write(f"**{mensual:.0f}**")
+                    else:
+                        c_lab, c_val = st.columns([2, 1])
+                        c_lab.write(p)
+                        c_val.write(f"**-**")
 
+        st.write("&nbsp;")
         st.markdown("---")
+        st.write("&nbsp;")
+        
         
         st.markdown(f"### Análisis de Causa, Solución y Asignación de Equipo", help=f"Esta información es en base a los tickets categorizados ({total - no_cat} tickets).")
+        st.write("&nbsp;")
+
         df_ficha = df_ficha[mask_procesados].copy()
 
-        c_causa, c_solucion, c_equipo = st.columns(3)
+        c_causa, c_solucion = st.columns(2)
+        c_equipo, c_resuelto = st.columns(2)
+
         top_causas_series = df_ficha['Temas_Causa'].value_counts(normalize=True).head(3)
         top_causas_nombres = top_causas_series.index.tolist()
         df_top_causas = df_ficha[df_ficha['Temas_Causa'].isin(top_causas_nombres)]
 
         with c_causa:
             with st.container(border=True):
-                st.subheader("Top 3 Causas")
-                st.caption("Causas más frecuentes:")
+                st.subheader("🎯 Top 3 Causas")
+                st.write("&nbsp;")
+                
                 if not top_causas_series.empty:
                     for causa, pct in top_causas_series.items():
-                        st.markdown(f"**{pct*100:.1f}%** - {causa}")
+
+                        col_pct, col_txt = st.columns([1, 6])
+                        col_pct.markdown(f"**{pct*100:.0f}%**")
+                        col_txt.markdown(f"{causa}")
+
                         st.progress(float(pct))
+                        st.write("") 
                 else:
                     st.info("Sin datos de causa.")
 
         with c_solucion:
             with st.container(border=True):
-                st.subheader("Top 3 Soluciones")
-                st.caption("Para las causas listadas a la izquierda:")
+                st.subheader("💡 Top 3 Soluciones")
+                st.caption("Asociadas a las causas principales")
+                
                 if not df_top_causas.empty:
                     top_sols = df_top_causas['Temas_Solucion'].value_counts(normalize=True).head(3)
                     for sol, pct in top_sols.items():
-                        st.markdown(f"**{pct*100:.1f}%** - {sol}")
-                        st.progress(float(pct)) 
+
+                        col_pct, col_txt = st.columns([1, 6])
+                        col_pct.markdown(f"**{pct*100:.0f}%**")
+                        col_txt.markdown(f"{sol}")
+                        
+                        st.progress(float(pct))
+                        st.write("")
                 else:
-                    st.info("No hay soluciones registradas para estas causas.")
+                    st.info("Sin soluciones para estas causas.")
 
 
         with c_equipo:
             with st.container(border=True):
-                st.subheader("Asignación de Equipos")
+                st.subheader("👥 Equipo")
                 top_equipos = df_ficha['Equipo'].value_counts(normalize=True).head(3)
+                
                 if not top_equipos.empty:
                     equipo_lider = top_equipos.index[0]
                     pct_lider = top_equipos.values[0]
 
                     if pct_lider > 0.6:
-                        st.success(f"✅ **Recomendación:** Asignar directamente a **{equipo_lider}**.")
+                        st.success(f"**Asignación Recomendada:** Existe una alta especialización en **{equipo_lider}** ({pct_lider*100:.0f}%). Se sugiere asignar directamente para optimizar el tiempo de resolución.")
                     elif pct_lider > 0.4:
-                        st.warning(f"⚠️ **Recomendación:** Probablemente **{equipo_lider}**, pero revisar causa.")
+                        st.warning(f"**Asignación Sugerida:** El equipo **{equipo_lider}** concentra la mayoría de los casos, aunque existe dispersión. Se recomienda validar la causa técnica antes de derivar.")
                     else:
-                        st.error("❓ **Recomendación:** Asignación dispersa. Revisar matriz detallada.")
-
-                    st.caption("Distribución histórica:")
+                        st.error(f"**Revisión Necesaria:** No hay un equipo dominante definido. Por favor, consulte la matriz de escalamiento detallada para evitar rebotes entre áreas.")
+                    st.caption("Distribución de carga:")
                     for eq, pct in top_equipos.items():
-                        st.write(f"• **{eq}**: {pct*100:.1f}%")
+                        col_pct, col_txt = st.columns([1, 6])
+                        col_pct.markdown(f"**{pct*100:.0f}%**")
+                        col_txt.markdown(f"{eq}")
+                        st.progress(float(pct))
                 else:
-                    st.write("Sin información de equipos.")
+                    st.info("Sin datos de equipos.")
+        
+        with c_resuelto:
+            with st.container(border=True):
+                st.subheader("🛠️ Resuelto con")
+                resuelto_counts = df_ficha['Resuelto_con'].value_counts()
+                
+                if not resuelto_counts.empty:
+                    
+                    # Listado de los 8-9 elementos
+                    for modo, cant in resuelto_counts.items():
+                        r1, r2 = st.columns([3, 1])
+                        # Usamos un estilo limpio sin bullets
+                        r1.markdown(f"<span style='font-size:0.9rem'>{modo}</span>", unsafe_allow_html=True)
+                        r2.markdown(f"**{cant}**")
+                else:
+                    st.info("Sin datos de resolución.")
+        
 
 

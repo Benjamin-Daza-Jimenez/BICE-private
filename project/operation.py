@@ -33,7 +33,8 @@ COLUMNS_SELECTED = [
     'Solucion',
     'Temas_Solucion',
     'Resumen',
-    'Temas_Resumen'
+    'Temas_Resumen',
+    'Resuelto_con'
 ]
 
 TEMAS = [
@@ -104,7 +105,7 @@ def operation_app(df_original):
         df = df.copy()
 
         st.title("📊 Panel de Visualización y Exportación")
-        st.markdown("Consulta y descarga los datos procesados para el análisis.")
+        st.write("---")
 
         st.subheader("Base de Datos Maestra (Jira) | Cantidad total de registros: " + str(len(df)))
         st.dataframe(df, width='stretch', hide_index=True)
@@ -132,58 +133,98 @@ def operation_app(df_original):
                 width='stretch'
             )
 
-# -------------------------------------- ACTIVO SW ---------------------------------------
+# -------------------------------------- ACTIVO SW -----------------------------------------
     elif st.session_state.seccion_op == "Activo_SW":
-        st.subheader("Análisis de Activo de Software")
+        st.title("📊 Análisis de Activo de Software")
+        st.write("---")
         col1, col2 = st.columns(2)
         with col1:
-            st.info("**Ficha Histórica**\n\nVisualice el comportamiento los Activos de Software, a través de su Promedio de tickets mensual, Equipo más frecuente, Causa raíz y más.")
+            st.warning("**Ficha Histórica**\n\nAnalice el desempeño de un activo mediante KPIs de volumen, prioridad y duración, obteniendo el desglose de causas raíz, soluciones aplicadas y recomendaciones para asignación de equipos.")
             if st.button("Ver Ficha", use_container_width=True):
                 cambiar_seccion("Activo_SW/Ficha")
                 st.rerun()
         
         with col2:
-            st.info("**Causa y Solución**\n\nTarjetas que muestran las causas raíz y soluciones aplicadas por activo de software y palabras claves en la descripción.")
+            st.warning("**Causa y Solución**\n\nExplore el historial operativo mediante la selección de un activo y una palabra clave de la descripción, visualizando las causas y soluciones más relevantes, junto a ejemplos reales aplicados.")
             if st.button("Ver Causa y Solución", use_container_width=True):
                 cambiar_seccion("Activo_SW/Pred")
                 st.rerun()
         st.write("")
 
-# ---------------------------------- ACTIVO SW / FICHA ---------------------------------------
+# ---------------------------------- ACTIVO SW / FICHA -------------------------------------
     elif st.session_state.seccion_op == "Activo_SW/Ficha":
         st.markdown("## 🏥 Ficha Técnica Unificada")
-        st.caption("Resumen estratégico para toma de decisiones rápida.")
         df = df.copy()
         mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+        if st.button("📥 Generar Documento (PDF/Impresión)"):
+            st.components.v1.html("""
+                <script>
+                    setTimeout(function() {
+                        window.parent.focus();
+                        window.parent.print();
+                    }, 1000);
+                </script>
+            """, height=0)
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")
         ficha.ficha_tecnica(df, 'Activo_SW')
 
-# ---------------------------------- ACTIVO SW / PRED ---------------------------------------
+# ----------------------------------- ACTIVO SW / PRED -------------------------------------
     elif st.session_state.seccion_op == "Activo_SW/Pred":
         df = df.copy()
         mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
         df = df[mask_procesados].copy()
 
         st.title("Causa y Solución por Activo de Software")
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.")
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")
 
         opcion = st.selectbox("Seleccione el Activo de Software para el Análisis", df['Activo_SW'].unique(), index=None, placeholder="Seleccione un Activo de Software")
         if opcion:
             df = df[df['Activo_SW'] == opcion]
             c_s.causa_solucion(df)
             
-# --------------------------------------- REPORTE ----------------------------------------
+# --------------------------------------- REPORTE ------------------------------------------
     elif st.session_state.seccion_op == "Reporte":
-        st.subheader("Análisis de Servicio Reportado")
+        st.title("📊 Análisis de Activo de Software")
+        st.write("---")
         col1, col2 = st.columns(2)
         with col1:
-            st.info("**Ficha Histórica**\n\nVisualice el comportamiento los Servicios Reportados, a través de su Promedio de tickets mensual, Equipo más frecuente, Causa raíz y más.")
+            st.success("**Ficha Histórica**\n\nAnalice el desempeño de un servicio reportado mediante KPIs de volumen, prioridad y duración, obteniendo el desglose de causas raíz, soluciones aplicadas y recomendaciones para asignación de equipos.")
             if st.button("Ver Ficha", use_container_width=True):
                 cambiar_seccion("Reporte/Ficha")
                 st.rerun()
         
         with col2:
-            st.info("**Causa y Solución**\n\nTarjetas que muestran las causas raíz y soluciones aplicadas por servicio reportado y palabras claves en la descripción.")
+            st.success("**Causa y Solución**\n\nExplore el historial operativo mediante la selección de un servicio reportado y una palabra clave de la descripción, visualizando las causas y soluciones más relevantes, junto a ejemplos reales aplicados.")
             if st.button("Ver Causa y Solución", use_container_width=True):
                 cambiar_seccion("Reporte/Pred")
                 st.rerun()
@@ -192,10 +233,33 @@ def operation_app(df_original):
 # ---------------------------------- REPORTE / FICHA ---------------------------------------
     elif st.session_state.seccion_op == "Reporte/Ficha":
         st.markdown("## 🏥 Ficha Técnica Unificada")
-        st.caption("Resumen estratégico para toma de decisiones rápida.")
         df = df.copy()
         mask_procesados = df[TEMAS].ne("No Aplica (Ticket Incompleto)").all(axis=1)
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), de los cuales {len(df[~mask_procesados])} no fueron categorizados, iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.", help="Los tickets no categorizados son aquellos que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+        if st.button("📥 Generar Documento (PDF/Impresión)"):
+            st.components.v1.html("""
+                <script>
+                    setTimeout(function() {
+                        window.parent.focus();
+                        window.parent.print();
+                    }, 1000);
+                </script>
+            """, height=0)
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")
         ficha.ficha_tecnica(df, 'Reporte')
 
 # ---------------------------------- REPORTE / PRED ---------------------------------------
@@ -205,14 +269,29 @@ def operation_app(df_original):
         df = df[mask_procesados].copy()
 
         st.title("Causa y Solución por Servicio Reportado")
-        st.markdown(f"La información a continuación es en base a {len(df)} registros (tickets), iniciados entre {df['Fecha_Inicio'].min().date().strftime('%d-%m-%Y')} y {df['Fecha_Inicio'].max().date().strftime('%d-%m-%Y')}.")
+        try:
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                with st.container(border=True):
+                    st.metric("Registros Base", len(df), help="Cantidad total de tickets en la base de datos luego de aplicar los filtros seleccionados.")
+            with col2:
+                with st.container(border=True):
+                    st.metric("Tickets No Categorizados", len(df[~mask_procesados]), help="Tickets que no cuentan con temas asignados en alguna de las siguientes columnas: Resumen, Descripción, Causa, Solución.")
+            with col3:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Mínima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').min().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más antiguo en la base de datos luego de aplicar los filtros seleccionados.")
+            with col4:
+                with st.container(border=True):
+                    st.metric("Fecha Inicial Máxima", pd.to_datetime(df['Fecha_Inicio'], errors='coerce').max().date().strftime('%d-%m-%Y'), help="Fecha de inicio del ticket más reciente en la base de datos luego de aplicar los filtros seleccionados.")
+        except:
+            st.markdown(f"Filtrando...")
         opcion = st.selectbox("Seleccione el Servicio Reportado para el Análisis", df['Reporte'].unique(), index=None, placeholder="Seleccione un Servicio Reportado")
         if opcion:
             df = df[df['Reporte'] == opcion]
         
             c_s.causa_solucion(df)
 
-# ----------------------------------- ACTUALIZAR DATOS -----------------------------------
+# --------------------------------------- VOLVER ------------------------------------------
     elif st.session_state.seccion_op == "Actualizar":
         st.session_state.seccion_op = "Visualizacion"
         st.session_state.seccion = "Eleccion"
