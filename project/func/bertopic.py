@@ -1,4 +1,5 @@
 from sklearn.feature_extraction.text import CountVectorizer
+from sentence_transformers import SentenceTransformer
 import plotly.graph_objects as go
 from nltk.corpus import stopwords
 from bertopic import BERTopic
@@ -13,7 +14,7 @@ import io
 import os
 
 def bertopic_app(df, columnas, verbose=True):
-    df_temp = df.copy()
+    df_temp = df.copy().reset_index(drop=True)
 
     try:
         stop_words_es = stopwords.words('spanish')
@@ -22,40 +23,49 @@ def bertopic_app(df, columnas, verbose=True):
 
     stop_words_es.extend(['que', 'el', 'la', 'en', 'de', 'para', 'se', 'no', 'si', 'un', 'con'])
     vectorizer_model = CountVectorizer(stop_words=stop_words_es)
+    embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+
+    mask = df_temp[columnas].astype(str).ne("Sin Información").all(axis=1)
+    df_validos = df_temp[mask].copy()
+
+    if df_validos.empty:
+        print("No hay tickets con las 4 columnas completas.")
+        return df_temp
+
+    # Bien hasta aquí
 
     for columna in columnas:
         print(f"Procesando columna: {columna} con BERTopic")
 
-        df_temp = data.clean_bert(df_temp, columna)
-        df_temp['temp_limpieza'] = df_temp[columna]
+        df_limpio = data.clean_bert(df_validos.copy(), columna)
 
-        docs = df_temp['temp_limpieza'].astype(str).tolist()
+        docs = df_limpio['temp_para_modelo'].astype(str).tolist()
+        indice_procesado = df_limpio.index
 
-        model = BERTopic(language="multilingual", vectorizer_model=vectorizer_model, verbose=verbose)
+        model = BERTopic(language="multilingual", embedding_model=embedding_model, vectorizer_model=vectorizer_model, verbose=verbose)
         topics, _ = model.fit_transform(docs)
-
-        new_topics = topics
+        
         if len(set(topics) - {-1}) > 0 and -1 in topics:
             try:
                 new_topics = model.reduce_outliers(docs, topics, strategy="c-tf-idf")
                 model.update_topics(docs, new_topics)
+                topics = new_topics
             except:
                 print("No se pudieron reducir outliers, manteniendo temas originales.")
 
         topic_info = model.get_topic_info().set_index('Topic')['Name'].to_dict()
+        nombres_temas = [topic_info.get(t, "Sin Clasificar").split('_', 1)[-1].replace('_', ' ').title() for t in topics]
 
-        nombres_temas = []
-        for t in new_topics:
-            nombre = topic_info.get(t, "Sin Clasificar")
+        columna_final = pd.Series("No Aplica (Ticket Incompleto)", index=df_temp.index)
+        nombres_series = pd.Series(nombres_temas, index=indice_procesado)
+        columna_final.update(nombres_series)
 
-            nombre_limpio = nombre.split('_', 1)[-1].replace('_', ' ').title() if '_' in nombre else nombre
-            nombres_temas.append(nombre_limpio)
-        
         idx_original = df_temp.columns.get_loc(columna)
         nombre_nueva_col = f"Temas_{columna}"
 
-        df_temp.insert(idx_original + 1, nombre_nueva_col, nombres_temas)
-        df_temp.drop(columns=['temp_limpieza'], inplace=True)
+        df_temp.insert(idx_original + 1, nombre_nueva_col, columna_final)
+        if 'temp_para_modelo' in df_temp.columns:
+            df_temp.drop(columns=['temp_para_modelo'], inplace=True)
     
     return df_temp
 

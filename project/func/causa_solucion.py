@@ -15,7 +15,7 @@ def causa_solucion(df):
     
     palabras_ordenadas = [p for p, c in contador_palabras.most_common()]
 
-    palabra = st.selectbox("Seleccione la Palabra Clave para Filtrar la columna Temas_Descripcion", palabras_ordenadas)
+    palabra = st.selectbox("Seleccione la Palabra Clave para Filtrar la columna Temas_Descripcion", palabras_ordenadas, index=None, placeholder="Seleccione una Palabra Clave")
 
     # Estados
     if palabra != st.session_state.get('last_palabra_filtro'):

@@ -2,7 +2,7 @@ import func.bertopic as bertopic
 import unittest
 import pandas as pd
 import contextlib
-import os
+import os 
 
 class TestBERTopic(unittest.TestCase):
     def setUp(self):
@@ -23,7 +23,6 @@ class TestBERTopic(unittest.TestCase):
                 self.dfResultado = bertopic.bertopic_app(
                     self.dfTest, 
                     ['Descripcion', 'Causa', 'Solucion', 'Resumen'], 
-                    nombre_archivo="Test_BERTopic_Results.xlsx",
                     verbose=False
                 )
     
@@ -40,16 +39,6 @@ class TestBERTopic(unittest.TestCase):
         self.assertTrue(self.dfResultado['Temas_Causa'].notna().all())
         self.assertTrue(self.dfResultado['Temas_Solucion'].notna().all())
         self.assertTrue(self.dfResultado['Temas_Resumen'].notna().all())
-
-    def test_BERTopic_Archivo(self):
-        """Verifica que el archivo Excel se haya creado"""
-        self.assertTrue(os.path.exists("data/Test_BERTopic_Results.xlsx"))
-    
-    def tearDown(self):
-        """Eliminar archivo de prueba si existe"""
-        test_file = "data/Test_BERTopic_Results.xlsx"
-        if os.path.exists(test_file):
-            os.remove(test_file)
     
 if __name__ == '__main__':
     unittest.main()
