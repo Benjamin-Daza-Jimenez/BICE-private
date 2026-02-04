@@ -189,11 +189,15 @@ if st.session_state.df is None:
 
             df = data.duracion(df, 'Fecha_Inicio', 'Fecha_Fin', 'Duracion')
             st.write("Generando tópicos con BERTopic, esto puede tardar varios minutos...")
+
             columnas = ['Resumen', 'Descripcion', 'Causa', 'Solucion']
 
             for col in columnas:
                 df[col] = df[col].fillna("Sin Información").astype(str).str.strip()
                 df[col] = df[col].replace("", "Sin Información")
+                df[col] = df[col].replace("nan", "Sin Información")
+                df[col] = df[col].replace("NaT", "Sin Información")
+                df[col] = df[col].replace("None", "Sin Información")
 
             df = bertopic.bertopic_app(df.copy(), columnas)
             df = data.clean(df, COLUMNS_RENAMED, 'Fecha_Inicio')
