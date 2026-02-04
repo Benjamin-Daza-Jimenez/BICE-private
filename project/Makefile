@@ -1,10 +1,14 @@
 PYTHON = venv/bin/python
 PIP = venv/bin/pip
 STREAMLIT = venv/bin/streamlit
-PYINSTALLER = venv/bin/pyinstaller
 
-install:
+.PHONY: venv install freeze run run-desktop test
+
+venv:
+	test -d venv || python3 -m venv venv
 	$(PIP) install --upgrade pip
+
+install: venv
 	$(PIP) install -r requirements.txt
 	$(PIP) install pywebview pyinstaller
 
