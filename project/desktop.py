@@ -7,7 +7,6 @@ import multiprocessing
 
 def start_streamlit():
     if getattr(sys, 'frozen', False):
-        # Si es un ejecutable, busca en la carpeta temporal de PyInstaller
         bundle_dir = sys._MEIPASS
     else:
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
@@ -33,12 +32,9 @@ if __name__ == "__main__":
     if os.environ.get("IS_STREAMLIT_CHILD") == "true":
         pass
     else:
-        # 1. Lanzar el servidor
         p = start_streamlit()
         
-        # 2. Crear la ventana apuntando directo al localhost
-        # (Añadimos un pequeño delay antes de abrir para que a Streamlit le dé tiempo)
-        time.sleep(35) 
+        time.sleep(10) 
         
         window = webview.create_window(
             'BICE Insight', 
@@ -50,5 +46,4 @@ if __name__ == "__main__":
         try:
             webview.start()
         finally:
-            # 3. Al cerrar la ventana, cerramos el servidor
             p.terminate()
