@@ -240,30 +240,45 @@ else:
     elif st.session_state.seccion == "Actualizar":
         st.title("Actualización de Datos desde Jira")
 
-        if st.button("Iniciar Actualización de Datos"):
-            st.session_state.df = None
-            st.session_state.seccion_op = "Visualizacion"
-            st.session_state.seccion = "Eleccion"
-            st.session_state.automatico = True
-            # Borrar excel
-            archivos = glob.glob("data/Jira_*.xlsx")
-            for archivo in archivos:
-                os.remove(archivo)
-            st.rerun()
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Iniciar Actualización de Datos", width='stretch'):
+                st.session_state.df = None
+                st.session_state.seccion_op = "Visualizacion"
+                st.session_state.seccion = "Eleccion"
+                st.session_state.automatico = True
+                # Borrar excel
+                archivos = glob.glob("data/Jira_*.xlsx")
+                for archivo in archivos:
+                    os.remove(archivo)
+                st.rerun()
+        with col2:
+            if st.button("Volver al menú principal", width='stretch'):
+                st.session_state.seccion_ma = "Visualizacion"
+                st.session_state.seccion = "Eleccion"
+                st.rerun()
     
     elif st.session_state.seccion == "Actualizar/Manual":
         st.title("Actualización de Datos desde Jira de forma Manual")
 
-        if st.button("Iniciar Actualización de Datos"):
-            st.session_state.df = None
-            st.session_state.automatico = False
-            st.session_state.seccion_op = "Visualizacion"
-            st.session_state.seccion = "Eleccion"
-            # Borrar excel
-            archivos = glob.glob("data/Jira_*.xlsx")
-            for archivo in archivos:
-                os.remove(archivo)
-            st.rerun()
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Iniciar Actualización de Datos", width='stretch'):
+                st.session_state.df = None
+                st.session_state.automatico = False
+                st.session_state.seccion_op = "Visualizacion"
+                st.session_state.seccion = "Eleccion"
+                # Borrar excel
+                archivos = glob.glob("data/Jira_*.xlsx")
+                for archivo in archivos:
+                    os.remove(archivo)
+                st.rerun()
+        
+        with col2:
+            if st.button("Volver al menú principal", width='stretch'):
+                st.session_state.seccion_ma = "Visualizacion"
+                st.session_state.seccion = "Eleccion"
+                st.rerun()
 
 
 

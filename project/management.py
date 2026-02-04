@@ -1,4 +1,3 @@
-import func.regresion as regresion
 import func.temporal as temporal
 import func.bertopic as bertopic
 import func.volume as volume
