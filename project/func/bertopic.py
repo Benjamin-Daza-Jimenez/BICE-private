@@ -203,14 +203,14 @@ def bertopic_graph_plotly(df):
             fig.update_layout(
                 title=dict(
                     text=f"Pareto Estratégico: {col}<br><span style='font-size:14px; color:#AAB7B8;'>Análisis con colchón de visibilidad post-80%</span>",
-                    x=0.5, font=dict(size=24), xanchor='center'
+                    x=0.5, font=dict(size=24, color=None), xanchor='center'
                 ),
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#F8F9FA'),
+                font=dict(color=None),
                 height=700,
                 margin=dict(t=120, b=150, l=60, r=60),
-                hoverlabel=dict(bgcolor="#1F2428", font_size=18),
+                hoverlabel=dict(bgcolor=None, font_size=18),
                 xaxis=dict(tickangle=-45, showgrid=False, showticklabels=True, tickfont=dict(size=11)),
                 yaxis=dict(title="Impacto Individual (%)", ticksuffix="%", range=[0, max(df_plot['Porcentaje']) * 1.15]),
                 yaxis2=dict(title="Total Acumulado (%)", ticksuffix="%", overlaying='y', side='right', range=[0, 105], showgrid=False),
@@ -222,8 +222,6 @@ def bertopic_graph_plotly(df):
                         line=dict(color="rgba(255, 0, 0, 0.6)", dash="dash", width=2))
 
             st.plotly_chart(fig, use_container_width=True)
-
-
 
             # --- NUEVA SECCIÓN: TABLA DE DETALLE CORPORATIVO ---
             df_temp = df.copy()

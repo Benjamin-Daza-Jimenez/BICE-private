@@ -53,11 +53,11 @@ def anual_plotly(df):
                     text=f'Gobernanza TI BICE: Carga y Eficiencia {anio}<br><span style="font-size:14px; color:#AAB7B8;">Volumen Anual vs. Mediana de Tiempo de Respuesta</span>',
                     x=0.5,
                     xanchor='center',
-                    font=dict(size=24, color="#FFFFFF")
+                    font=dict(size=24, color=None)
                 ),
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#F8F9FA'),
+                font=dict(color=None),
                 height=650,
 
                 legend=dict(
@@ -69,7 +69,7 @@ def anual_plotly(df):
                     font=dict(size=14)
                 ),
                 xaxis=dict(
-                    tickfont=dict(size=14, color='#FFFFFF'),
+                    tickfont=dict(size=14, color=None),
                     showline=False
                 ),
                 yaxis=dict(
@@ -132,7 +132,7 @@ def mensual_plotly(df):
                     thickness=20,
                     len=0.5,
                     ypad=10,
-                    tickfont=dict(color='#F8F9FA')
+                    tickfont=dict(color=None)
                 ),
             ))
 
@@ -141,11 +141,11 @@ def mensual_plotly(df):
                     text=f'Mapa de Calor Operativo BICE {anio}<br><span style="font-size:14px;">Color: Volumen de Tickets | Texto: Mediana Duración (h)</span>',
                     x=0.5,
                     xanchor='center',
-                    font=dict(size=22, color="#FFFFFF")
+                    font=dict(size=22, color=None)
                 ),
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#F8F9FA'),
+                font=dict(color=None),
                 xaxis=dict(title='Mes', side='bottom'),
                 yaxis=dict(
                     title='Día del Mes', 

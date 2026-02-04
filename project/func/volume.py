@@ -60,7 +60,7 @@ def grafico_gauss(df):
     # 4. HISTOGRAMA REAL
     fig.add_trace(go.Histogram(
         x=datos, histnorm='probability density', name='Días Reales',
-        marker=dict(color=COLOR_BARRAS, opacity=0.5, line=dict(color='white', width=0.5)),
+        marker=dict(color=COLOR_BARRAS, opacity=0.5, line=dict(color=None, width=0.5)),
         nbinsx=25, hovertemplate="<b>Volumen:</b> %{x} tickets<br><b>Densidad:</b> %{y:.4f}<extra></extra>"
     ))
 
@@ -74,14 +74,13 @@ def grafico_gauss(df):
     # 6. LAYOUT CON MARGEN Y ESPACIADO
     fig.update_layout(
         title=dict(
-            # Añadimos <br><br> para dar aire entre el título y el gráfico
             text=f'ANÁLISIS DE CAPACIDAD OPERATIVA<br><span style="font-size:15px; color:#AAB7B8;">Media: {mu:.1f} | Desviación (σ): {sigma:.1f} | Muestra: {len(datos)} días</span><br> ',
-            x=0.5, xanchor="center", font=dict(size=22, color="white")
+            x=0.5, xanchor="center", font=dict(size=22, color=None)
         ),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white'),
-        hoverlabel=dict(bgcolor="#2C3E50", font_size=13, font_color="white"),
+        font=dict(color=None),
+        hoverlabel=dict(bgcolor="#2C3E50", font_size=13, font_color=None),
         xaxis=dict(
             title='Cantidad de Tickets por Día', range=[0, datos.max() * 1.25],
             gridcolor='rgba(255,255,255,0.05)', zeroline=True, zerolinecolor='rgba(255,255,255,0.2)'
@@ -89,7 +88,7 @@ def grafico_gauss(df):
         yaxis=dict(title='Densidad', showticklabels=True, gridcolor='rgba(255,255,255,0.05)'),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
         height=650,
-        margin=dict(l=50, r=50, t=150, b=50) # T=150 da el margen superior necesario
+        margin=dict(l=50, r=50, t=150, b=50) 
     )
 
     # Línea de la Media
