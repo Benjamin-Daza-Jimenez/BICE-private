@@ -5,12 +5,14 @@ Este proyecto es una aplicación desarrollada en Python 3.9+ con una interfaz en
 ## ⚠️ Nota Importante para Usuarios de Windows
 
 El sistema de automatización de este proyecto utiliza make, una herramienta nativa de sistemas Unix.
+
 * macOS / Linux: Puede ejecutar los comandos directamente en la terminal.
 * Windows: No use PowerShell ni el CMD estándar. Debe utilizar una terminal WSL (Windows Subsystem for Linux) o contar con un entorno emulado como Git Bash con Make instalado para que los comandos funcionen correctamente.
 
 ## ⏱️ Requisitos Previos
 
 Asegurarse de tener instaladas las siguientes herramientas antes de comenzar:
+
 * Python 3.9 o superior
 * Make (Herramienta de automatización)
 * Pip (Gestor de paquetes de Python)
@@ -20,27 +22,38 @@ Asegurarse de tener instaladas las siguientes herramientas antes de comenzar:
 
 1. **Clonar repositorio**
 
-Abrir terminal y ejecutar el siguiente comando:
-```bash
-git clone https://github.com/Benjamin-Daza-Jimenez/BICE-private.git
-cd BICE-private/project/
-```
+    Abrir terminal y ejecutar el siguiente comando:
+
+    ```bash
+    git clone https://github.com/Benjamin-Daza-Jimenez/BICE-private.git
+    cd BICE-private/project/
+    ```
 
 2. **Instalación de dependencias**
 
-Dentro de la carpeta project/, ejecutar el comando de instalación. Este paso creará el entorno virtual e instalará las librerías necesarias de requirements.txt.
-```bash
-make install
-```
+    Dentro de la carpeta project/, ejecutar el comando de instalación. Este paso creará el entorno virtual e instalará las librerías necesarias de requirements.txt.
+
+    ```bash
+    make install
+    ```
 
 3. **Ejecutar programa**
 
-Una vez instaladas las dependencias, lanzar la interfaz de Streamlit con:
-```bash
-make run
-```
+    Una vez instaladas las dependencias, lanzar la interfaz de Streamlit con:
 
-## 🏛️ Diccionario de Comandos 
+    ```bash
+    make run
+    ```
+
+## 📁 Subida de archivo Excel de Jira (Manual)
+
+Si ocurre un error en la descarga automática o se prefiere subir el archivo manualmente, seguir estos pasos:
+
+1. Descargar el archivo Excel desde Jira con las columnas necesarias ([Filtro: GDI Análisis para ML](https://bicevida.atlassian.net/issues/?filter=20375)).
+2. Cambiar el nombre de la hoja a "Base" obligatoriamente.
+3. Subir el archivo Excel en la interfaz de la aplicación cuando se solicite.
+
+## 🏛️ Diccionario de Comandos
 
 ### Makefile
 
@@ -59,12 +72,15 @@ make run
 | `deactivate` | Desactivar el entorno virtual si está activo. |
 
 ## Contenido Archivo .env
+
 Se debe crear un archivo .env en la carpeta project con el siguiente contenido:
+
 ```text
 JIRA_EMAIL = email corporativo de quien generó el token
 JIRA_API_TOKEN = token generando desde jira
 JIRA_DOMAIN = bicevida.atlassian.net
 ```
+
 Para generar el Token de Jira: Configuración de la cuenta > Seguridad > Crear y gestionar tokens de API > Crear token de API
 
 ## 🗂️ Estructura del Proyecto
@@ -87,9 +103,10 @@ BICE-Private
 
 ## 💼 Funcionalidades de Gestión
 
-### Filtros
+### Filtros de Gestión
 
 Se pueden incorporar múltiples filtros activos tales como:
+
 * Prioridad: prioridad asignada al ticket (Lowest, Low, Medium, High, Highest).
 * Equipo: equipo resolutor del ticket.
 * Fecha_Inicio: fecha real que inicia el ticket.
@@ -117,9 +134,10 @@ Se representa la distribución de la actividad diaria mediante una Campana de Ga
 
 ## 🛠️ Funcionalidades de Operación
 
-### Filtros
+### Filtros de Operación
 
 Se pueden incorporar múltiples filtros activos tales como:
+
 * Prioridad: prioridad asignada al ticket (Lowest, Low, Medium, High, Highest).
 * Equipo: equipo resolutor del ticket.
 * Fecha_Inicio: fecha real que inicia el ticket.
