@@ -22,14 +22,12 @@ def grafico_gauss(df):
 
     fig = go.Figure()
 
-    # --- PALETA DE COLORES AJUSTADA ---
     COLOR_BARRAS = '#607D8B'    
     COLOR_MODELO = '#FFB347'    
     RANGO_68 = 'rgba(46, 204, 113, 0.35)'  
     RANGO_95 = 'rgba(241, 196, 15, 0.25)'  
     RANGO_99 = 'rgba(231, 76, 60, 0.2)'    
 
-    # 3. CAPAS DE SOMBREADO (Se grafican primero para quedar atrás)
     # 99.7%
     x3 = np.linspace(max(0, mu - 3*sigma_calc), mu + 3*sigma_calc, 150)
     fig.add_trace(go.Scatter(
@@ -57,21 +55,18 @@ def grafico_gauss(df):
         name='Operación Rutinaria (68%)', hoverinfo='skip'
     ))
 
-    # 4. HISTOGRAMA REAL
     fig.add_trace(go.Histogram(
         x=datos, histnorm='probability density', name='Días Reales',
         marker=dict(color=COLOR_BARRAS, opacity=0.5, line=dict(color=None, width=0.5)),
         nbinsx=25, hovertemplate="<b>Volumen:</b> %{x} tickets<br><b>Densidad:</b> %{y:.4f}<extra></extra>"
     ))
 
-    # 5. LÍNEA GAUSS
     fig.add_trace(go.Scatter(
         x=x, y=y, mode='lines', name='Curva Gauss',
         line=dict(color=COLOR_MODELO, width=4),
         hovertemplate="<b>Modelo:</b> %{x:.1f} tickets<br><b>Densidad:</b> %{y:.4f}<extra></extra>"
     ))
 
-    # 6. LAYOUT CON MARGEN Y ESPACIADO
     fig.update_layout(
         title=dict(
             text=f'ANÁLISIS DE CAPACIDAD OPERATIVA<br><span style="font-size:15px; color:#AAB7B8;">Media: {mu:.1f} | Desviación (σ): {sigma:.1f} | Muestra: {len(datos)} días</span><br> ',
@@ -91,12 +86,10 @@ def grafico_gauss(df):
         margin=dict(l=50, r=50, t=150, b=50) 
     )
 
-    # Línea de la Media
     fig.add_vline(x=mu, line_dash="dash", line_color="white", opacity=0.6)
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # Guía de interpretación
     st.markdown("---") 
     st.subheader("Guía de Interpretación Operativa")
 
