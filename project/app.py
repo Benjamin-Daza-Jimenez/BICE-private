@@ -130,29 +130,44 @@ if st.session_state.df is None:
     st.write("A continuación, cargaremos los datos desde Jira o desde un archivo local si está disponible y es reciente.")
     
     if st.session_state.automatico:
-        ruta_local, fecha_file = get_local_file()
-        es_antiguo = (datetime.now() - fecha_file).days > 7 if fecha_file else True
+        try:
+            ruta_local, fecha_file = get_local_file()
+            es_antiguo = (datetime.now() - fecha_file).days > 7 if fecha_file else True
 
-        if es_antiguo:
-            with st.status("Descargando desde Jira...", expanded=True) as status:
-                df = jira.jira_get()
-                necesita_transformacion = True
-                status.update(label="Descarga completada.", state="complete", expanded=False)
-        else:
-            with st.spinner("Cargando base de datos local..."):
-                df = pd.read_excel(ruta_local, sheet_name='Base')
-            necesita_transformacion = not any(col in df.columns for col in TEMAS)
+            if es_antiguo:
+                with st.status("Descargando desde Jira...", expanded=True) as status:
+                    df = jira.jira_get()
+                    necesita_transformacion = True
+                    status.update(label="Descarga completada.", state="complete", expanded=False)
+            else:
+                with st.spinner("Cargando base de datos local..."):
+                    df = pd.read_excel(ruta_local, sheet_name='Base')
+                necesita_transformacion = not any(col in df.columns for col in TEMAS)
+
+        except Exception as e:
+            st.error(f"Error al cargar archivo local: {e}")
+            st.info("Por favor, cargue el archivo manualmente para continuar con el análisis.")
+            archivo_subido = st.file_uploader("Sube tu archivo Excel de Jira", type=['xlsx'])
+            if archivo_subido is not None:
+                with st.spinner("Procesando archivo subido..."):
+                    df = pd.read_excel(archivo_subido, sheet_name='Base')
+                    necesita_transformacion = not any(col in df.columns for col in TEMAS)
+                    st.success("Archivo cargado con éxito.")
+                    st.session_state.automatico = True
+            else:
+                st.info("Por favor, sube un archivo para continuar.")
+                st.stop()
     else:
         archivo_subido = st.file_uploader("Sube tu archivo Excel de Jira", type=['xlsx'])
         if archivo_subido is not None:
             with st.spinner("Procesando archivo subido..."):
-                df = pd.read_excel(archivo_subido)
+                df = pd.read_excel(archivo_subido, sheet_name='Base')
                 necesita_transformacion = not any(col in df.columns for col in TEMAS)
                 st.success("Archivo cargado con éxito.")
+                st.session_state.automatico = True
         else:
             st.info("Por favor, sube un archivo para continuar.")
             st.stop()
-        st.session_state.automatico = True
     
     if necesita_transformacion:
         with st.status("Transformando datos...", expanded=True) as status:
@@ -229,6 +244,7 @@ else:
             st.session_state.df = None
             st.session_state.seccion_op = "Visualizacion"
             st.session_state.seccion = "Eleccion"
+            st.session_state.automatico = True
             # Borrar excel
             archivos = glob.glob("data/Jira_*.xlsx")
             for archivo in archivos:
